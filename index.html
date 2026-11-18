@@ -1,0 +1,3568 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#fff8fb">
+  <title>Menù Mobile • Selezione Anonima Smartphone</title>
+  <!--
+    VERSIONE DEDICATA MOBILE-FIRST (menu-digitale-mobile.html)
+    - Compatibile al 100% con i dati salvati dalla versione Desktop (stesse chiavi localStorage).
+    - Zero cookie, zero CDN esterni, zero tracciamento.
+    - Ottimizzata per l'uso a una mano (Thumb-Zone), con Bottom-Sheet nativi e barra anti-copertura note.
+  -->
+  <style>
+    /* ==========================================================================
+       1. DESIGN TOKENS — TEMA CHIARO ROSATO (DEFAULT) & DARK ROSE
+       ========================================================================== */
+    :root,
+    [data-theme="light"] {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      --bg: #fff8fb;
+      --bg-elevated: #ffffff;
+      --surface: #ffffff;
+      --surface-soft: #fdf2f8;
+      --surface-2: #fce7f3;
+      --border: #f9a8d4;
+      --border-subtle: #fbcfe8;
+      --border-strong: #ec4899;
+
+      --text: #231528;
+      --text-secondary: #6e5675;
+      --text-muted: #967a9e;
+
+      --accent: #db2777;
+      --accent-hover: #be185d;
+      --accent-text: #ffffff;
+      --accent-soft: #fdf2f8;
+      --accent-border: #f472b6;
+
+      --privacy: #059669;
+      --privacy-soft: #ecfdf5;
+      --privacy-border: #6ee7b7;
+
+      --danger: #e11d48;
+      --danger-soft: #fff1f2;
+      --danger-border: #fda4af;
+
+      --info: #9333ea;
+      --info-soft: #faf5ff;
+      --info-border: #e9d5ff;
+
+      --shadow-xs: 0 1px 4px rgba(219, 39, 119, 0.06);
+      --shadow-sm: 0 4px 14px rgba(219, 39, 119, 0.08);
+      --shadow-md: 0 10px 26px rgba(190, 24, 93, 0.15);
+      --shadow-sheet: 0 -10px 36px rgba(35, 21, 40, 0.22);
+      --backdrop: rgba(35, 21, 40, 0.56);
+
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 22px;
+      --radius-pill: 999px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --transition: 170ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    [data-theme="dark"] {
+      --bg: #150c18;
+      --bg-elevated: #211225;
+      --surface: #27162c;
+      --surface-soft: #331c39;
+      --surface-2: #3c2143;
+      --border: #552e5e;
+      --border-subtle: #43244a;
+      --border-strong: #f472b6;
+
+      --text: #fdf2f8;
+      --text-secondary: #e2c6dc;
+      --text-muted: #b18bab;
+
+      --accent: #f472b6;
+      --accent-hover: #f9a8d4;
+      --accent-text: #240b18;
+      --accent-soft: rgba(244, 114, 182, 0.16);
+      --accent-border: rgba(244, 114, 182, 0.45);
+
+      --privacy: #34d399;
+      --privacy-soft: rgba(52, 211, 153, 0.14);
+      --privacy-border: rgba(52, 211, 153, 0.4);
+
+      --danger: #fb7185;
+      --danger-soft: rgba(251, 113, 133, 0.16);
+      --danger-border: rgba(251, 113, 133, 0.4);
+
+      --info: #c084fc;
+      --info-soft: rgba(192, 132, 252, 0.14);
+      --info-border: rgba(192, 132, 252, 0.38);
+
+      --shadow-xs: 0 2px 6px rgba(0, 0, 0, 0.35);
+      --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.45);
+      --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.65);
+      --shadow-sheet: 0 -10px 40px rgba(0, 0, 0, 0.78);
+      --backdrop: rgba(9, 4, 11, 0.78);
+    }
+
+    /* ==========================================================================
+       2. RESET & MOBILE SHELL CONTAINER
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.42;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color var(--transition), color var(--transition);
+    }
+
+    /* Cornice mobile centrata anche se aperta da tablet/schermo largo */
+    .mobile-shell {
+      max-width: 540px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background: var(--bg);
+    }
+
+    @media (min-width: 580px) {
+      .mobile-shell {
+        border-left: 1px solid var(--border-subtle);
+        border-right: 1px solid var(--border-subtle);
+        box-shadow: var(--shadow-md);
+      }
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================================
+       3. TOP APP BAR ULTRA-COMPATTA + CAROSELLO GIORNI TOUCH
+       ========================================================================== */
+    .mobile-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 35;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-xs);
+    }
+
+    .topbar-row-1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px 8px;
+    }
+
+    .brand-compact {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .brand-logo-dot {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--accent-soft);
+      border: 1.5px solid var(--accent-border);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+
+    .brand-text-wrap {
+      min-width: 0;
+    }
+
+    .brand-name {
+      margin: 0;
+      font-size: 0.94rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub-pills {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 1px;
+    }
+
+    .mini-ticket-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+
+    .mini-privacy-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+      background: var(--privacy-soft);
+      border: 1px solid var(--privacy-border);
+      color: var(--privacy);
+      font-size: 0.68rem;
+      font-weight: 800;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .top-icon-btn {
+      height: 36px;
+      min-width: 36px;
+      padding: 0 10px;
+      border-radius: 10px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .top-icon-btn.mgr-btn {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+
+    .mgr-badge-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 900;
+    }
+
+    /* Carosello Orizzontale Giorni Touch (Snap Scroll) */
+    .days-carousel-wrap {
+      padding: 4px 12px 10px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .days-carousel-wrap::-webkit-scrollbar {
+      display: none;
+    }
+
+    .day-pill-btn {
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+      min-width: 112px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      position: relative;
+      transition: all var(--transition);
+    }
+
+    .day-pill-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      box-shadow: 0 4px 12px rgba(219, 39, 119, 0.28);
+    }
+
+    .day-pill-top {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .day-pill-name {
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+    }
+
+    .day-pill-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      font-size: 0.65rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface-2);
+      color: var(--text-muted);
+    }
+
+    .day-pill-btn.compiled .day-pill-dot {
+      background: var(--privacy);
+      color: #ffffff;
+    }
+
+    .day-pill-btn.active.compiled .day-pill-dot {
+      background: #ffffff;
+      color: var(--privacy);
+    }
+
+    .day-pill-date {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      opacity: 0.88;
+    }
+
+    /* ==========================================================================
+       4. SUB-BAR CATEGORIE STICKY & TOGGLE VISTA PASSO-PASSO / SCORREVOLE
+       ========================================================================== */
+    .sticky-subnav {
+      position: sticky;
+      top: 107px;
+      z-index: 30;
+      background: var(--bg);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .subnav-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .active-day-chip {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .active-day-chip span.date-mono {
+      font-family: var(--font-mono);
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--accent-border);
+      font-size: 0.74rem;
+    }
+
+    .view-mode-switch {
+      display: inline-flex;
+      align-items: center;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 2px;
+    }
+
+    .view-mode-btn {
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      transition: all var(--transition);
+    }
+
+    .view-mode-btn.active {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* Stepper / Quick Jump Pills per le 4 sezioni */
+    .course-jump-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .course-jump-pill {
+      padding: 7px 4px;
+      border-radius: 10px;
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: all var(--transition);
+    }
+
+    .course-jump-pill.active-step {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .course-jump-pill.done {
+      border-color: var(--privacy-border);
+      background: var(--privacy-soft);
+      color: var(--privacy);
+    }
+
+    .course-jump-pill.done.active-step {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-soft);
+    }
+
+    /* ==========================================================================
+       5. AREA CONTENUTO & CARD PIATTI ORIZZONTALI THUMB-ZONE
+       ========================================================================== */
+    .mobile-main {
+      flex: 1;
+      padding: 12px 12px 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: padding-bottom var(--transition);
+    }
+
+    body.bar-mode-fab .mobile-main,
+    body.bar-mode-inline .mobile-main,
+    body.keyboard-open .mobile-main {
+      padding-bottom: 36px;
+    }
+
+    .course-section {
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 13px;
+      box-shadow: var(--shadow-xs);
+      scroll-margin-top: 195px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* In modalità Passo-Passo mostra solo la portata attiva */
+    body.step-view-active .course-section {
+      display: none;
+    }
+
+    body.step-view-active .course-section.step-current {
+      display: flex;
+      animation: fadeSlideIn 160ms ease-out;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .course-sec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .course-sec-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .course-step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      font-size: 0.76rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .course-sec-title {
+      margin: 0;
+      font-size: 0.96rem;
+      font-weight: 900;
+    }
+
+    .none-pill-btn {
+      padding: 5px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .none-pill-btn.selected {
+      background: var(--danger-soft);
+      border-color: var(--danger-border);
+      color: var(--danger);
+    }
+
+    /* Card Piatto Orizzontale ad Alto Impatto Touch (min-height 68px) */
+    .dish-cards-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .mobile-dish-card {
+      width: 100%;
+      min-height: 70px;
+      padding: 12px 13px;
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: left;
+      transition: all var(--transition);
+    }
+
+    .mobile-dish-card:active {
+      transform: scale(0.985);
+    }
+
+    .mobile-dish-card.selected {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px rgba(219, 39, 119, 0.14);
+    }
+
+    .dish-card-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .dish-card-topline {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .dish-opt-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--surface-2);
+      padding: 1px 6px;
+      border-radius: 6px;
+    }
+
+    .dish-diet-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: var(--surface-soft);
+      border: 1px solid var(--border-subtle);
+      padding: 1px 7px;
+      border-radius: var(--radius-pill);
+    }
+
+    .dish-card-name {
+      margin: 1px 0 0;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .dish-card-desc {
+      margin: 0;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.32;
+    }
+
+    /* Indicatore di selezione grande sul lato destro (Thumb Zone) */
+    .dish-thumb-check {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--border-strong);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      font-weight: 900;
+      color: transparent;
+      flex-shrink: 0;
+      transition: all var(--transition);
+    }
+
+    .mobile-dish-card.selected .dish-thumb-check {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+      transform: scale(1.06);
+    }
+
+    /* Navigazione Passo-Passo interna alla card */
+    .step-nav-footer {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border-subtle);
+    }
+
+    body.step-view-active .step-nav-footer {
+      display: flex;
+    }
+
+    /* ==========================================================================
+       6. EXTRA 1-TAP (ACQUA, CAFFÈ, PANINO) & SEZIONE NOTE ANTI-COPERTURA
+       ========================================================================== */
+    .extras-3col-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .mobile-extra-btn {
+      padding: 12px 8px;
+      border-radius: var(--radius-md);
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      text-align: center;
+      transition: all var(--transition);
+    }
+
+    .mobile-extra-btn:active {
+      transform: scale(0.97);
+    }
+
+    .mobile-extra-btn.active {
+      background: var(--privacy-soft);
+      border-color: var(--privacy);
+      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.14);
+    }
+
+    .mobile-extra-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .mobile-extra-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .mobile-extra-status {
+      padding: 2px 9px;
+      border-radius: var(--radius-pill);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 900;
+      background: var(--surface-2);
+      color: var(--text-muted);
+    }
+
+    .mobile-extra-btn.active .mobile-extra-status {
+      background: var(--privacy);
+      color: #ffffff;
+    }
+
+    /* Box Note 100% Libero e Confortevole su Smartphone */
+    .mobile-notes-box {
+      margin-top: 6px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--accent-soft);
+      border: 1.5px solid var(--accent-border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .notes-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .notes-label {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .quick-note-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .quick-note-chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .note-chip-btn {
+      flex: 0 0 auto;
+      padding: 5px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--accent);
+      font-size: 0.73rem;
+      font-weight: 800;
+    }
+
+    .note-chip-btn:active {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .mobile-input {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-size: 0.94rem; /* >=16px evita lo zoom automatico forzato su iOS */
+    }
+
+    .mobile-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.16);
+    }
+
+    /* Selettore Posizione Barra Inferiore integrato sotto le note */
+    .bar-mode-selector-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 8px 10px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      font-size: 0.74rem;
+    }
+
+    .bar-mode-pills {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .bar-mode-pill {
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+
+    .bar-mode-pill.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* ==========================================================================
+       7. BARRA INFERIORE INTELLIGENTE (3 MODALITÀ: MINI DOCK, FAB, FISSA FINE PAGINA)
+       ========================================================================== */
+    .mobile-bottom-dock {
+      position: fixed;
+      left: 50%;
+      bottom: calc(10px + var(--safe-bottom));
+      transform: translateX(-50%);
+      width: calc(100% - 20px);
+      max-width: 516px;
+      z-index: 40;
+      background: var(--bg-elevated);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius-lg);
+      padding: 10px 12px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: all 190ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    /* Quando l'utente scrive nelle Note o apre la tastiera, la barra flottante non copre MAI */
+    body.keyboard-open .mobile-bottom-dock:not(.mode-inline) {
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 120%);
+    }
+
+    /* Modalità 2: Pulsante Singolo (FAB) nell'angolo destro */
+    .mobile-bottom-dock.mode-fab {
+      left: auto;
+      right: 14px;
+      transform: none;
+      width: auto;
+      border-radius: var(--radius-pill);
+      padding: 6px 8px 6px 12px;
+    }
+
+    .mobile-bottom-dock.mode-fab .dock-summary-text {
+      display: none;
+    }
+
+    /* Modalità 3: Fissa a fine pagina sotto le note (non galleggia sopra nulla) */
+    .mobile-bottom-dock.mode-inline {
+      position: static;
+      transform: none;
+      width: calc(100% - 24px);
+      margin: 0 auto 28px;
+    }
+
+    .dock-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .dock-minimize-toggle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .dock-summary-text {
+      min-width: 0;
+    }
+
+    .dock-title-line {
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dock-sub-line {
+      font-size: 0.71rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .dock-send-btn {
+      padding: 10px 15px;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 0.84rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(219, 39, 119, 0.28);
+    }
+
+    /* ==========================================================================
+       8. BOTTOM-SHEET NATIVI MOBILE (MODALI CHE SCORRONO DAL BASSO)
+       ========================================================================== */
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: var(--backdrop);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .bottom-sheet {
+      width: 100%;
+      max-width: 540px;
+      max-height: 92vh;
+      background: var(--bg-elevated);
+      border-top: 2px solid var(--border);
+      border-radius: 24px 24px 0 0;
+      box-shadow: var(--shadow-sheet);
+      display: flex;
+      flex-direction: column;
+      transform: translateY(100%);
+      transition: transform 230ms cubic-bezier(0.2, 0.85, 0.25, 1);
+      overflow: hidden;
+    }
+
+    .sheet-backdrop.open .bottom-sheet {
+      transform: translateY(0);
+    }
+
+    .sheet-handle-bar {
+      padding: 8px 0 2px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .sheet-handle-pill {
+      width: 44px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--border);
+    }
+
+    .sheet-header {
+      padding: 8px 16px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .sheet-title {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 900;
+    }
+
+    .sheet-close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--surface-2);
+      color: var(--text);
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sheet-body {
+      padding: 14px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sheet-footer {
+      padding: 12px 16px calc(12px + var(--safe-bottom));
+      border-top: 1px solid var(--border-subtle);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Pulsanti Mobile Standard */
+    .m-btn-primary {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 16px;
+      border-radius: var(--radius-md);
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 0.92rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(219, 39, 119, 0.25);
+    }
+
+    .m-btn-privacy {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      background: var(--privacy);
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .m-btn-secondary {
+      min-height: 42px;
+      padding: 9px 13px;
+      border-radius: var(--radius-sm);
+      background: var(--surface-soft);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .m-btn-danger {
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--danger-soft);
+      border: 1px solid var(--danger-border);
+      color: var(--danger);
+      font-size: 0.8rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    /* ==========================================================================
+       9. AREA GESTORE MOBILE (CARD VERTICALI, ZERO TABELLE ORIZZONTALI)
+       ========================================================================== */
+    .m-mgr-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      background: var(--surface-soft);
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .m-mgr-tab {
+      padding: 8px 4px;
+      border-radius: 11px;
+      font-size: 0.74rem;
+      font-weight: 900;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    .m-mgr-tab.active {
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .m-mgr-panel {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .m-mgr-panel.active {
+      display: flex;
+    }
+
+    .m-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .m-kpi-card {
+      padding: 11px 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .m-kpi-card.hero {
+      grid-column: 1 / -1;
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .m-kpi-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .m-kpi-val {
+      font-family: var(--font-mono);
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--accent);
+    }
+
+    /* Card Mobile per ogni singolo Ordine ricevuto dal Gestore */
+    .mobile-order-card {
+      padding: 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .moc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px dashed var(--border-subtle);
+      padding-bottom: 6px;
+    }
+
+    .moc-badge-user {
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .moc-badge-user.named {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+    }
+
+    .moc-badge-user.anon {
+      background: var(--surface-2);
+      color: var(--text-secondary);
+    }
+
+    .moc-dishes {
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .moc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 4px;
+    }
+
+    .count-progress-row {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 6px 0;
+    }
+
+    .count-progress-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.81rem;
+      font-weight: 700;
+    }
+
+    .count-progress-bar {
+      height: 7px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+
+    .count-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+    }
+
+    /* Varianti colore coerenti per le 1-3 etichette sui piatti */
+    .dish-diet-tag.tag-tone-green {
+      background: var(--privacy-soft);
+      border-color: var(--privacy-border);
+      color: var(--privacy);
+    }
+
+    .dish-diet-tag.tag-tone-rose {
+      background: var(--accent-soft);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+
+    .dish-diet-tag.tag-tone-blue {
+      background: var(--info-soft);
+      border-color: var(--info-border);
+      color: var(--info);
+    }
+
+    .dish-diet-tag.tag-tone-amber {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #b45309;
+    }
+
+    [data-theme="dark"] .dish-diet-tag.tag-tone-amber {
+      background: rgba(245, 158, 11, 0.16);
+      border-color: rgba(251, 191, 36, 0.4);
+      color: #fbbf24;
+    }
+
+    /* Griglia KPI a 3 colonne per Primi, Secondi e Contorni */
+    .m-kpi-courses-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .m-kpi-course-box {
+      padding: 10px 8px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 2px;
+    }
+
+    .m-kpi-course-sub {
+      font-size: 0.66rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .m-kpi-extras-row {
+      grid-column: 1 / -1;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      border: 1.5px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Editor Etichette Interattivo (Min. 1 - Max. 3) nel Gestore Mobile */
+    .m-dish-edit-card {
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elevated);
+      border: 1.5px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .m-tag-editor-box {
+      padding: 8px 9px;
+      border-radius: 10px;
+      background: var(--surface-soft);
+      border: 1px dashed var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .m-tag-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.73rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+    }
+
+    .m-tag-counter-badge {
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.69rem;
+      font-weight: 900;
+    }
+
+    .m-active-tags-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .m-active-tag-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 0.74rem;
+      font-weight: 800;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .m-active-tag-remove {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.24);
+      color: var(--accent-text);
+      font-size: 0.74rem;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .m-preset-tags-scroll {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .m-preset-tag-btn {
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      font-weight: 800;
+      transition: all var(--transition);
+    }
+
+    .m-preset-tag-btn.is-selected {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .m-custom-tag-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    /* Vista Ticket a Schermo Intero */
+    .fullscreen-ticket {
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+      background: #ffffff;
+      color: #111111;
+      display: none;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .fullscreen-ticket.open {
+      display: flex;
+    }
+
+    /* Toast Mobile centrato in alto */
+    .mobile-toast-wrap {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 110;
+      width: calc(100% - 28px);
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .mobile-toast {
+      background: var(--text);
+      color: var(--bg-elevated);
+      padding: 11px 15px;
+      border-radius: var(--radius-md);
+      font-size: 0.83rem;
+      font-weight: 800;
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="mobile-shell">
+    <!-- ======================================================================
+         1. TOP APP BAR COMPATTA + CAROSELLO GIORNI SCORREVOLE
+         ====================================================================== -->
+    <header class="mobile-topbar">
+      <div class="topbar-row-1">
+        <div class="brand-compact">
+          <div class="brand-logo-dot" aria-hidden="true">🌸</div>
+          <div class="brand-text-wrap">
+            <h1 class="brand-name">Menù [ARKadia YOUNG]</h1>
+            <div class="brand-sub-pills">
+              <button type="button" class="mini-ticket-pill" id="topTicketBtn" title="Tocca per rigenerare Ticket">
+                <span id="topTicketDisplay">#PASTO-0000</span> ↻
+              </button>
+              <button type="button" class="mini-privacy-pill" id="openPrivacySheetBtn">
+                🔒 0 Cookie
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="topbar-actions">
+          <button type="button" class="top-icon-btn mgr-btn" id="openManagerSheetBtn" aria-label="Area Gestore e Cucina">
+            <span>🔒 Gestore</span>
+            <span class="mgr-badge-count" id="topOrdersBadge">0</span>
+          </button>
+          <button type="button" class="top-icon-btn" id="themeSwitchBtn" aria-label="Cambia tema">
+            <span id="themeIcon">🌙</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Carosello Giorni Touch (Snap Scroll) -->
+      <div class="days-carousel-wrap" id="daysCarousel" role="tablist" aria-label="Giorni della settimana"></div>
+    </header>
+
+    <!-- ======================================================================
+         2. SUB-NAVIGAZIONE STICKY: SALTO PORTATE + TOGGLE PASSO-PASSO
+         ====================================================================== -->
+    <div class="sticky-subnav">
+      <div class="subnav-top-row">
+        <div class="active-day-chip">
+          <span id="subnavDayName">LUNEDÌ</span>
+          <span class="date-mono" id="subnavDayDate">16/11/2026</span>
+        </div>
+
+        <div class="view-mode-switch" role="group" aria-label="Modalità visualizzazione">
+          <button type="button" class="view-mode-btn active" id="modeScrollBtn">Scorrevole</button>
+          <button type="button" class="view-mode-btn" id="modeStepBtn">Passo-Passo</button>
+        </div>
+      </div>
+
+      <!-- Barra 4 Portate con Spunta Automatica -->
+      <div class="course-jump-bar" id="courseJumpBar">
+        <button type="button" class="course-jump-pill active-step" data-jump-step="primo" id="jumpPill_primo">
+          <span>1️⃣ Primo</span>
+        </button>
+        <button type="button" class="course-jump-pill" data-jump-step="secondo" id="jumpPill_secondo">
+          <span>2️⃣ Secondo</span>
+        </button>
+        <button type="button" class="course-jump-pill" data-jump-step="contorno" id="jumpPill_contorno">
+          <span>3️⃣ Contorno</span>
+        </button>
+        <button type="button" class="course-jump-pill" data-jump-step="extra" id="jumpPill_extra">
+          <span>🥖 Extra</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         3. CONTENUTO PRINCIPALE: PORTATE & CARD ORIZZONTALI THUMB-ZONE
+         ====================================================================== -->
+    <main class="mobile-main" id="mobileMainTouchArea">
+      <!-- PORTATA 1: PRIMO PIATTO -->
+      <section class="course-section step-current" id="sec_primo" data-step-section="primo">
+        <div class="course-sec-header">
+          <div class="course-sec-title-wrap">
+            <span class="course-step-num">1</span>
+            <h2 class="course-sec-title">🍝 Primo Piatto (3 scelte)</h2>
+          </div>
+          <button type="button" class="none-pill-btn" data-clear-course="primo" id="noneBtn_primo">
+            ✕ Nessuno
+          </button>
+        </div>
+
+        <div class="dish-cards-stack" id="stack_primo"></div>
+
+        <div class="step-nav-footer">
+          <span style="font-size:0.75rem; color:var(--text-muted);">Passo 1 di 4</span>
+          <button type="button" class="m-btn-secondary" data-go-step="secondo">Avanti: Secondo →</button>
+        </div>
+      </section>
+
+      <!-- PORTATA 2: SECONDO PIATTO -->
+      <section class="course-section" id="sec_secondo" data-step-section="secondo">
+        <div class="course-sec-header">
+          <div class="course-sec-title-wrap">
+            <span class="course-step-num">2</span>
+            <h2 class="course-sec-title">🥩 Secondo Piatto (3 scelte)</h2>
+          </div>
+          <button type="button" class="none-pill-btn" data-clear-course="secondo" id="noneBtn_secondo">
+            ✕ Nessuno
+          </button>
+        </div>
+
+        <div class="dish-cards-stack" id="stack_secondo"></div>
+
+        <div class="step-nav-footer">
+          <button type="button" class="m-btn-secondary" data-go-step="primo">← Primo</button>
+          <button type="button" class="m-btn-secondary" data-go-step="contorno">Avanti: Contorno →</button>
+        </div>
+      </section>
+
+      <!-- PORTATA 3: CONTORNO -->
+      <section class="course-section" id="sec_contorno" data-step-section="contorno">
+        <div class="course-sec-header">
+          <div class="course-sec-title-wrap">
+            <span class="course-step-num">3</span>
+            <h2 class="course-sec-title">🥗 Contorno (3 scelte)</h2>
+          </div>
+          <button type="button" class="none-pill-btn" data-clear-course="contorno" id="noneBtn_contorno">
+            ✕ Nessuno
+          </button>
+        </div>
+
+        <div class="dish-cards-stack" id="stack_contorno"></div>
+
+        <div class="step-nav-footer">
+          <button type="button" class="m-btn-secondary" data-go-step="secondo">← Secondo</button>
+          <button type="button" class="m-btn-secondary" data-go-step="extra">Avanti: Extra & Note →</button>
+        </div>
+      </section>
+
+      <!-- PORTATA 4: EXTRA 1-TAP (ACQUA, CAFFÈ, PANINO) + NOTE LIBERE -->
+      <section class="course-section" id="sec_extra" data-step-section="extra">
+        <div class="course-sec-header">
+          <div class="course-sec-title-wrap">
+            <span class="course-step-num">4</span>
+            <h2 class="course-sec-title">💧 Acqua · ☕ Caffè · 🥖 Panino</h2>
+          </div>
+          <button type="button" class="none-pill-btn" id="resetDayMobileBtn">Azzera giorno</button>
+        </div>
+
+        <div class="extras-3col-grid" id="mobileExtrasGrid"></div>
+
+        <!-- Sezione Note con Chip Rapidi 1-Tap e Protezione Anti-Copertura -->
+        <div class="mobile-notes-box" id="mobileNotesContainer">
+          <div class="notes-top-row">
+            <label class="notes-label" for="mobileNoteInput">
+              📝 Note / Allergie / Variazioni (facoltativo)
+            </label>
+          </div>
+
+          <!-- Chip rapidi toccabili con il pollice -->
+          <div class="quick-note-chips" aria-label="Suggerimenti rapidi note">
+            <button type="button" class="note-chip-btn" data-add-note="Senza lattosio">+ Senza lattosio</button>
+            <button type="button" class="note-chip-btn" data-add-note="Senza glutine">+ Senza glutine</button>
+            <button type="button" class="note-chip-btn" data-add-note="Cottura ben cotta">+ Ben cotto</button>
+            <button type="button" class="note-chip-btn" data-add-note="Senza salsa">+ Senza salsa</button>
+            <button type="button" class="note-chip-btn" data-add-note="Porzione leggera">+ Leggero</button>
+          </div>
+
+          <input
+            type="text"
+            id="mobileNoteInput"
+            class="mobile-input"
+            maxlength="140"
+            placeholder="Scrivi qui eventuali note o intolleranze..."
+            autocomplete="off"
+          >
+          <div style="font-size:0.71rem; color:var(--text-secondary);">
+            ✨ Mentre scrivi qui, la barra inferiore scompare da sola per non coprire mai la tastiera.
+          </div>
+        </div>
+
+        <!-- Controllo rapido stile barra inferiore + Passa al giorno successivo -->
+        <div class="bar-mode-selector-strip">
+          <span style="font-weight:800; color:var(--text-secondary);">Barra invio:</span>
+          <div class="bar-mode-pills">
+            <button type="button" class="bar-mode-pill active" data-set-barmode="mini">Mini Barra</button>
+            <button type="button" class="bar-mode-pill" data-set-barmode="fab">Icona Angolo</button>
+            <button type="button" class="bar-mode-pill" data-set-barmode="inline">Fine Pagina</button>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; gap:8px; padding-top:4px;">
+          <button type="button" class="m-btn-secondary" id="prevDayMobileBtn" style="flex:1;">← Giorno Prec.</button>
+          <button type="button" class="m-btn-secondary" id="nextDayMobileBtn" style="flex:1;">Giorno Succ. →</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- ======================================================================
+         4. BARRA INFERIORE MOBILE (MINI DOCK / ICONA FAB / FINE PAGINA)
+         ====================================================================== -->
+    <div class="mobile-bottom-dock" id="mobileBottomDock" role="region" aria-label="Barra invio scelte">
+      <div class="dock-left">
+        <button type="button" class="dock-minimize-toggle" id="toggleFabModeBtn" title="Riduci a icona o espandi">
+          <span id="dockToggleIcon">🔽</span>
+        </button>
+        <div class="dock-summary-text">
+          <div class="dock-title-line" id="dockMainLine">0 giorni compilati</div>
+          <div class="dock-sub-line" id="dockSubLine">Tocca i piatti per selezionarli</div>
+        </div>
+      </div>
+
+      <button type="button" class="dock-send-btn" id="openReviewSheetBtn">
+        <span>🚀 Invia</span>
+        <span id="dockCountPill" style="background:rgba(255,255,255,0.22); padding:1px 7px; border-radius:999px; font-family:var(--font-mono); font-size:0.75rem;">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       5. BOTTOM-SHEET 1: RIEPILOGO E INVIO AL GESTORE (CON NOME FACOLTATIVO)
+       ======================================================================== -->
+  <div class="sheet-backdrop" id="reviewSheet" role="dialog" aria-modal="true" aria-labelledby="reviewSheetTitle">
+    <div class="bottom-sheet">
+      <div class="sheet-handle-bar"><div class="sheet-handle-pill"></div></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title" id="reviewSheetTitle">🚀 Conferma e Invia al Gestore</h2>
+        <button type="button" class="sheet-close-btn" data-close-sheet="reviewSheet">✕</button>
+      </div>
+
+      <div class="sheet-body">
+        <!-- Box Ticket Anonimo -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:11px 13px; border-radius:var(--radius-md); background:var(--surface-soft); border:1px solid var(--border);">
+          <div>
+            <div style="font-size:0.7rem; font-weight:800; color:var(--text-secondary); text-transform:uppercase;">Codice Ticket Anonimo</div>
+            <div style="font-family:var(--font-mono); font-size:1.2rem; font-weight:900; color:var(--accent);" id="sheetTicketCode">#PASTO-0000</div>
+          </div>
+          <button type="button" class="m-btn-secondary" id="sheetRegenTicketBtn">↻ Cambia</button>
+        </div>
+
+        <!-- Campo Nome Facoltativo visibile SOLO al Gestore -->
+        <div style="padding:12px; border-radius:var(--radius-md); background:var(--surface); border:1.5px solid var(--accent-border); display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label for="sheetUserNameInput" style="font-size:0.84rem; font-weight:900;">
+              👤 Nome o Nickname <span style="color:var(--accent);">(Facoltativo)</span>
+            </label>
+            <span style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">Vuoto = Anonimo</span>
+          </div>
+          <input
+            type="text"
+            id="sheetUserNameInput"
+            class="mobile-input"
+            maxlength="40"
+            placeholder="Es. Marco R. (oppure lascia vuoto)"
+          >
+          <input
+            type="text"
+            id="sheetUserGroupInput"
+            class="mobile-input"
+            maxlength="30"
+            placeholder="Reparto / Tavolo / Ufficio (opzionale)"
+          >
+          <div style="font-size:0.74rem; color:var(--privacy); background:var(--privacy-soft); border:1px solid var(--privacy-border); padding:7px 10px; border-radius:8px; font-weight:700;">
+            🔒 Visibile <strong>SOLO al Gestore</strong> protetto da PIN. Se lasciato vuoto sarai registrato come <strong>"🕵️ Anonimo"</strong>.
+          </div>
+        </div>
+
+        <!-- Lista Giorni Compilati -->
+        <div id="sheetDaysList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+
+      <div class="sheet-footer">
+        <button type="button" class="m-btn-privacy" id="confirmSendMobileBtn">
+          🚀 Invia Ora al Gestore
+        </button>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <button type="button" class="m-btn-secondary" id="copyMobileOrderBtn">📋 Copia Testo</button>
+          <button type="button" class="m-btn-secondary" id="showFullscreenTicketBtn">📱 Mostra Ticket</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       6. BOTTOM-SHEET 2: ACCESSO PIN GESTORE
+       ======================================================================== -->
+  <div class="sheet-backdrop" id="pinSheet" role="dialog" aria-modal="true" aria-labelledby="pinSheetTitle">
+    <div class="bottom-sheet">
+      <div class="sheet-handle-bar"><div class="sheet-handle-pill"></div></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title" id="pinSheetTitle">🔐 Accesso Riservato Gestore</h2>
+        <button type="button" class="sheet-close-btn" data-close-sheet="pinSheet">✕</button>
+      </div>
+      <form id="mobilePinForm" class="sheet-body">
+        <p style="margin:0; font-size:0.84rem; color:var(--text-secondary);">
+          Inserisci il PIN Gestore per visualizzare il totale delle ordinazioni della giornata e i nomi facoltativi.
+        </p>
+        <input
+          type="password"
+          id="mobilePinInput"
+          class="mobile-input"
+          style="font-family:var(--font-mono); font-size:1.25rem; text-align:center; letter-spacing:0.2em;"
+          placeholder="••••"
+          required
+        >
+        <div style="padding:8px 11px; border-radius:var(--radius-sm); background:var(--accent-soft); border:1px solid var(--accent-border); font-size:0.78rem;">
+          💡 PIN predefinito per la prova: <strong style="font-family:var(--font-mono); color:var(--accent);">1234</strong>
+        </div>
+        <button type="submit" class="m-btn-primary">🔓 Sblocca Area Gestore</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       7. BOTTOM-SHEET 3: AREA GESTORE & RIEPILOGO CUCINA (LAYOUT MOBILE A CARD)
+       ======================================================================== -->
+  <div class="sheet-backdrop" id="managerSheet" role="dialog" aria-modal="true" aria-labelledby="managerSheetTitle">
+    <div class="bottom-sheet" style="max-height:94vh;">
+      <div class="sheet-handle-bar"><div class="sheet-handle-pill"></div></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title" id="managerSheetTitle">⚙️ Gestore & Cucina Mobile</h2>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="m-btn-danger" id="lockManagerMobileBtn" style="min-height:32px; padding:4px 9px; font-size:0.72rem;">🔒 Blocca</button>
+          <button type="button" class="sheet-close-btn" data-close-sheet="managerSheet">✕</button>
+        </div>
+      </div>
+
+      <div class="sheet-body">
+        <div class="m-mgr-tabs">
+          <button type="button" class="m-mgr-tab active" data-m-tab="kitchen">📊 1. Cucina</button>
+          <button type="button" class="m-mgr-tab" data-m-tab="menu">📅 2. Date/Piatti</button>
+          <button type="button" class="m-mgr-tab" data-m-tab="settings">🔗 3. PIN/Sheets</button>
+        </div>
+
+        <!-- PANNELLO 1: RIEPILOGO GIORNATA & CARD SINGOLE ORDINAZIONI -->
+        <div class="m-mgr-panel active" id="mPanel_kitchen">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <label for="mKitchenDaySelect" style="font-size:0.78rem; font-weight:800; color:var(--text-secondary);">Seleziona Giorno e Data da controllare:</label>
+            <select id="mKitchenDaySelect" class="mobile-input" style="font-weight:800;"></select>
+          </div>
+
+          <!-- KPI Totale Ordinazioni della Giornata -->
+          <div class="m-kpi-grid" id="mKpiGrid"></div>
+
+          <!-- Spoglio Analitico 3 Primi, 3 Secondi, 3 Contorni -->
+          <div id="mDishCountsList" style="display:flex; flex-direction:column; gap:10px;"></div>
+
+          <!-- Azioni Export / Reset -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+            <button type="button" class="m-btn-secondary" id="mExportCsvBtn">⬇️ Excel (.CSV)</button>
+            <button type="button" class="m-btn-secondary" id="mExportTxtBtn">🖨️ Foglio (.TXT)</button>
+          </div>
+
+          <!-- Lista Singole Ordinazioni in Card Mobile (Zero tabelle orizzontali!) -->
+          <div style="border-top:1px solid var(--border-subtle); padding-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="font-size:0.88rem;">Singole Ordinazioni del Giorno (<span id="mDayOrdersCount">0</span>)</strong>
+              <button type="button" class="m-btn-danger" id="mClearDayOrdersBtn" style="min-height:30px; padding:3px 8px; font-size:0.7rem;">Svuota Giorno</button>
+            </div>
+            <div id="mOrdersCardsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+          </div>
+        </div>
+
+        <!-- PANNELLO 2: CONFIGURA DATE (ES. 01/01/2026) E PIATTI -->
+        <div class="m-mgr-panel" id="mPanel_menu">
+          <div style="padding:11px; border-radius:var(--radius-md); background:var(--surface-soft); border:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
+            <strong style="font-size:0.84rem; color:var(--accent);">Imposta Date Settimana (GG/MM/AAAA)</strong>
+            <div style="display:flex; gap:6px;">
+              <input type="date" id="mMondayDateInput" class="mobile-input" style="flex:1;">
+              <button type="button" class="m-btn-secondary" id="mApplyMondayBtn">Applica</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <button type="button" class="m-btn-secondary" id="mSetJan2026Btn" style="font-size:0.74rem; min-height:34px;">Data 01/01/2026</button>
+              <label style="font-size:0.78rem; font-weight:800; display:flex; align-items:center; gap:5px;">
+                <input type="checkbox" id="mIncludeWeekendChk"> Sabato e Domenica
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <select id="mEditDaySelect" class="mobile-input" style="font-weight:800;"></select>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <input type="text" id="mEditDayName" class="mobile-input" placeholder="LUNEDÌ">
+              <input type="text" id="mEditDayDate" class="mobile-input" placeholder="01/01/2026">
+            </div>
+            <div id="mEditCoursesStack" style="display:flex; flex-direction:column; gap:10px;"></div>
+            <button type="button" class="m-btn-primary" id="mSaveDayMenuBtn">💾 Salva Giorno e Piatti</button>
+          </div>
+        </div>
+
+        <!-- PANNELLO 3: CAMBIO PIN & WEBHOOK GOOGLE SHEETS -->
+        <div class="m-mgr-panel" id="mPanel_settings">
+          <div style="padding:12px; border-radius:var(--radius-md); background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
+            <strong style="font-size:0.86rem; color:var(--accent);">🔐 Modifica PIN Area Gestore</strong>
+            <input type="text" id="mNewPinInput" class="mobile-input" placeholder="Nuovo PIN (es. 1234)">
+            <button type="button" class="m-btn-primary" id="mSavePinBtn">Salva Nuovo PIN</button>
+          </div>
+
+          <div style="padding:12px; border-radius:var(--radius-md); background:var(--surface); border:1px solid var(--border); display:flex; flex-direction:column; gap:8px;">
+            <strong style="font-size:0.86rem; color:var(--accent);">🔗 URL Google Sheets (Webhook)</strong>
+            <input type="url" id="mWebhookInput" class="mobile-input" placeholder="https://script.google.com/macros/s/.../exec">
+            <button type="button" class="m-btn-secondary" id="mSaveWebhookBtn">Salva URL Webhook</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       8. BOTTOM-SHEET 4: GARANZIA PRIVACY-FREE
+       ======================================================================== -->
+  <div class="sheet-backdrop" id="privacySheet" role="dialog" aria-modal="true" aria-labelledby="privacySheetTitle">
+    <div class="bottom-sheet">
+      <div class="sheet-handle-bar"><div class="sheet-handle-pill"></div></div>
+      <div class="sheet-header">
+        <h2 class="sheet-title" id="privacySheetTitle">🔒 Garanzia Privacy-Free</h2>
+        <button type="button" class="sheet-close-btn" data-close-sheet="privacySheet">✕</button>
+      </div>
+      <div class="sheet-body" style="font-size:0.85rem;">
+        <p style="margin:0;">
+          Questa Web App Mobile opera con <strong>0 Cookie</strong> e <strong>0 Tracciamento</strong>:
+        </p>
+        <ul style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+          <li>Nessuna registrazione, email o numero di telefono richiesto.</li>
+          <li>Codice Ticket generato localmente sul tuo telefono (<code id="privacyTicketEcho">#PASTO-0000</code>).</li>
+          <li>Il campo Nome è 100% facoltativo e visibile esclusivamente al gestore.</li>
+        </ul>
+        <button type="button" class="m-btn-danger" id="mWipeAllBtn" style="width:100%;">🗑️ Cancella Dati Locali del Browser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       9. TICKET A SCHERMO INTERO AD ALTO CONTRASTO
+       ======================================================================== -->
+  <div class="fullscreen-ticket" id="fullscreenTicket">
+    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:2px solid #111;">
+      <strong>TICKET PASTO MOBILE</strong>
+      <button type="button" id="closeFullscreenTicketBtn" style="background:#111; color:#fff; padding:7px 14px; border-radius:999px; font-weight:800;">✕ Chiudi</button>
+    </div>
+    <div id="fullscreenTicketBody" style="padding:18px 16px; display:flex; flex-direction:column; gap:14px;"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="mobile-toast-wrap" id="mobileToastWrap" aria-live="polite"></div>
+
+  <!-- ========================================================================
+       10. LOGICA JAVASCRIPT (COMPATIBILE CON LA VERSIONE DESKTOP)
+       ======================================================================== -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* Stesse chiavi localStorage della versione Desktop per piena compatibilità */
+      const STORAGE_KEYS = {
+        WEEK_MENU: 'pweekly_menu_v2',
+        SELECTIONS: 'pweekly_user_selections_v2',
+        TICKET_ID: 'pweekly_ticket_id_v2',
+        USER_NAME: 'pweekly_optional_name_v2',
+        GROUP_TAG: 'pweekly_group_tag_v2',
+        RECEIVED_ORDERS: 'pweekly_kitchen_orders_v3',
+        WEBHOOK_URL: 'pweekly_webhook_url_v2',
+        MANAGER_PIN: 'pweekly_manager_pin_v2',
+        INCLUDE_WEEKEND: 'pweekly_include_weekend_v2',
+        THEME: 'pweekly_theme_rose_v3',
+        MOBILE_BAR_MODE: 'pweekly_mobile_barmode_v1',
+        MOBILE_VIEW_MODE: 'pweekly_mobile_viewmode_v1'
+      };
+
+      function getDefaultDays() {
+        return [
+          {
+            id: 'lun', name: 'LUNEDÌ', short: 'LUN', date: '16/11/2026', isWeekend: false,
+            primo: [
+              { id: 'p1', name: 'Penne al Pomodoro e Basilico', desc: 'Pasta trafilata al bronzo con pomodoro fresco e basilico.', tag: 'Vegano' },
+              { id: 'p2', name: 'Risotto allo Zafferano', desc: 'Riso Carnaroli mantecato con zafferano e Grana.', tag: 'Senza Glutine' },
+              { id: 'p3', name: 'Pasta e Fagioli Tradizionale', desc: 'Cremosa zuppa di fagioli borlotti e rosmarino.', tag: 'Vegano' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Petto di Pollo ai Ferri', desc: 'Filetto di pollo alla piastra con erbe aromatiche.', tag: 'Senza Glutine' },
+              { id: 's2', name: 'Frittata alle Zucchine', desc: 'Frittata soffice al forno con zucchine e menta.', tag: 'Vegetariano' },
+              { id: 's3', name: 'Mozzarella Fior di Latte', desc: 'Bocconcini freschi con filo d’olio EVO.', tag: 'Senza Glutine' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Insalata Mista di Stagione', desc: 'Lattuga, radicchio, carote e pomodorini.', tag: 'Vegano' },
+              { id: 'c2', name: 'Patate al Forno al Rosmarino', desc: 'Spicchi di patate dorate al forno.', tag: 'Senza Glutine' },
+              { id: 'c3', name: 'Spinaci Saltati all’Olio EVO', desc: 'Spinaci al vapore ripassati con olio e limone.', tag: 'Vegano' }
+            ]
+          },
+          {
+            id: 'mar', name: 'MARTEDÌ', short: 'MAR', date: '17/11/2026', isWeekend: false,
+            primo: [
+              { id: 'p1', name: 'Fusilli al Pesto Genovese', desc: 'Pasta corta con pesto di basilico, pinoli e Grana.', tag: 'Vegetariano' },
+              { id: 'p2', name: 'Lasagne alla Bolognese', desc: 'Sfoglia all’uovo con ragù e besciamella.', tag: 'Classico' },
+              { id: 'p3', name: 'Vellutata di Zucca con Crostini', desc: 'Crema delicata di zucca mantovana.', tag: 'Vegano' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Filetto di Merluzzo Gratinato', desc: 'Cuore di merluzzo al forno con panatura aromatica.', tag: 'Pesce' },
+              { id: 's2', name: 'Scaloppine di Lonza al Limone', desc: 'Fettine tenere sfumate al succo di limone.', tag: 'Carne' },
+              { id: 's3', name: 'Burger Vegetale di Ceci', desc: 'Medaglione di ceci e carote cotto al forno.', tag: 'Vegano' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Fagiolini al Vapore', desc: 'Fagiolini teneri conditi con olio EVO.', tag: 'Senza Glutine' },
+              { id: 'c2', name: 'Carote Julienne all’Agro', desc: 'Carote fresche con semi di girasole.', tag: 'Vegano' },
+              { id: 'c3', name: 'Verdure Grigliate Miste', desc: 'Zucchine, melanzane e peperoni alla piastra.', tag: 'Senza Glutine' }
+            ]
+          },
+          {
+            id: 'mer', name: 'MERCOLEDÌ', short: 'MER', date: '18/11/2026', isWeekend: false,
+            primo: [
+              { id: 'p1', name: 'Mezze Maniche all’Arrabbiata', desc: 'Pomodoro San Marzano, aglio dolce e peperoncino.', tag: 'Vegano' },
+              { id: 'p2', name: 'Riso in Bianco all’Olio EVO', desc: 'Riso leggero con olio extravergine e Grana a parte.', tag: 'Senza Glutine' },
+              { id: 'p3', name: 'Farro Mediterraneo', desc: 'Farro perlato con datterini e olive taggiasche.', tag: 'Vegano' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Roastbeef con Rucola', desc: 'Fette sottili di roastbeef con rucola e limone.', tag: 'Senza Glutine' },
+              { id: 's2', name: 'Ricotta Fresca Vaccina', desc: 'Ricotta morbida con pomodorini secchi.', tag: 'Vegetariano' },
+              { id: 's3', name: 'Polpette di Lenticchie al Sugo', desc: 'Morbide polpette vegetali in salsa di pomodoro.', tag: 'Vegano' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Purè di Patate Cremoso', desc: 'Purè preparato con patate fresche.', tag: 'Senza Glutine' },
+              { id: 'c2', name: 'Insalata Verde Croccante', desc: 'Cuori di lattuga romana e iceberg.', tag: 'Vegano' },
+              { id: 'c3', name: 'Finocchi Gratinati al Forno', desc: 'Spicchi di finocchio con panatura dorata.', tag: 'Vegano' }
+            ]
+          },
+          {
+            id: 'gio', name: 'GIOVEDÌ', short: 'GIO', date: '19/11/2026', isWeekend: false,
+            primo: [
+              { id: 'p1', name: 'Gnocchi alla Sorrentina', desc: 'Gnocchi con pomodoro, basilico e mozzarella.', tag: 'Vegetariano' },
+              { id: 'p2', name: 'Spaghetti Aglio, Olio e Peperoncino', desc: 'Spaghetti con olio EVO e prezzemolo.', tag: 'Vegano' },
+              { id: 'p3', name: 'Minestrone di Verdure Fresche', desc: 'Passato ricco di ortaggi di stagione.', tag: 'Senza Glutine' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Arrosto di Tacchino alle Erbe', desc: 'Fesa di tacchino al forno con salvia e rosmarino.', tag: 'Senza Glutine' },
+              { id: 's2', name: 'Trancio di Salmone al Forno', desc: 'Salmone cotto al forno con aneto e limone.', tag: 'Pesce' },
+              { id: 's3', name: 'Primo Sale alla Piastra', desc: 'Formaggio primo sale scottato con origano.', tag: 'Vegetariano' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Piselli Novelli Stufati', desc: 'Pisellini dolci cotti lentamente.', tag: 'Senza Glutine' },
+              { id: 'c2', name: 'Patate Lesse al Prezzemolo', desc: 'Patate a cubetti condite con olio e prezzemolo.', tag: 'Vegano' },
+              { id: 'c3', name: 'Pomodori in Insalata', desc: 'Pomodoro maturo con origano siciliano.', tag: 'Senza Glutine' }
+            ]
+          },
+          {
+            id: 'ven', name: 'VENERDÌ', short: 'VEN', date: '20/11/2026', isWeekend: false,
+            primo: [
+              { id: 'p1', name: 'Linguine al Sugo di Mare', desc: 'Linguine con sugo di mare e prezzemolo fresco.', tag: 'Pesce' },
+              { id: 'p2', name: 'Paccheri alla Norma', desc: 'Pomodoro, melanzane, basilico e ricotta salata.', tag: 'Vegetariano' },
+              { id: 'p3', name: 'Risotto Zucchine e Menta', desc: 'Riso Carnaroli mantecato con crema di zucchine.', tag: 'Senza Glutine' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Filetto di Orata alle Olive', desc: 'Orata al forno con pomodorini e olive.', tag: 'Senza Glutine' },
+              { id: 's2', name: 'Straccetti di Manzo alla Rucola', desc: 'Straccetti saltati con rucola e Grana.', tag: 'Carne' },
+              { id: 's3', name: 'Hummus di Ceci con Verdure', desc: 'Crema di ceci con bastoncini di verdura.', tag: 'Vegano' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Cicoria Ripassata', desc: 'Cicoria saltata con olio EVO e peperoncino.', tag: 'Vegano' },
+              { id: 'c2', name: 'Insalata Mista con Mais', desc: 'Insalata fresca con mais dolce.', tag: 'Senza Glutine' },
+              { id: 'c3', name: 'Zucchine Trifolate', desc: 'Zucchine a rondelle con prezzemolo.', tag: 'Vegano' }
+            ]
+          },
+          {
+            id: 'sab', name: 'SABATO', short: 'SAB', date: '21/11/2026', isWeekend: true,
+            primo: [
+              { id: 'p1', name: 'Trofie al Pesto', desc: 'Ricetta ligure con pesto e fagiolini.', tag: 'Vegetariano' },
+              { id: 'p2', name: 'Rigatoni al Ragù', desc: 'Rigatoni con ragù tradizionale.', tag: 'Classico' },
+              { id: 'p3', name: 'Riso Basmati alle Verdure', desc: 'Riso profumato con verdure croccanti.', tag: 'Senza Glutine' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Cotoletta di Pollo al Forno', desc: 'Cotoletta dorata cotta al forno.', tag: 'Carne' },
+              { id: 's2', name: 'Caprese Mozzarella e Pomodoro', desc: 'Mozzarella fresca, pomodoro e basilico.', tag: 'Senza Glutine' },
+              { id: 's3', name: 'Tofu Marinato alle Erbe', desc: 'Tofu alla piastra con limone e rosmarino.', tag: 'Vegano' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Patate Rustiche', desc: 'Patate al forno.', tag: 'Senza Glutine' },
+              { id: 'c2', name: 'Insalata Mista', desc: 'Insalata fresca.', tag: 'Vegano' },
+              { id: 'c3', name: 'Carote al Vapore', desc: 'Rondelle di carote.', tag: 'Vegano' }
+            ]
+          },
+          {
+            id: 'dom', name: 'DOMENICA', short: 'DOM', date: '22/11/2026', isWeekend: true,
+            primo: [
+              { id: 'p1', name: 'Lasagne Verdi al Forno', desc: 'Lasagne tradizionali della domenica.', tag: 'Classico' },
+              { id: 'p2', name: 'Penne Pomodoro e Ricotta', desc: 'Sugo di pomodoro e ricotta.', tag: 'Vegetariano' },
+              { id: 'p3', name: 'Zuppa di Legumi e Cereali', desc: 'Misto rustico di farro e legumi.', tag: 'Vegano' }
+            ],
+            secondo: [
+              { id: 's1', name: 'Arrosto di Vitello', desc: 'Arrosto morbido al forno.', tag: 'Senza Glutine' },
+              { id: 's2', name: 'Filetto di Branzino', desc: 'Branzino al forno.', tag: 'Pesce' },
+              { id: 's3', name: 'Torta Salata Spinaci e Ricotta', desc: 'Sfoglia ripiena.', tag: 'Vegetariano' }
+            ],
+            contorno: [
+              { id: 'c1', name: 'Patate Novelle', desc: 'Patatine dorate.', tag: 'Senza Glutine' },
+              { id: 'c2', name: 'Verdure Grigliate', desc: 'Misto grigliato.', tag: 'Vegano' },
+              { id: 'c3', name: 'Insalata di Stagione', desc: 'Insalata fresca.', tag: 'Vegano' }
+            ]
+          }
+        ];
+      }
+
+      function getDefaultSampleOrders() {
+        return [
+          {
+            ticketId: '#PASTO-4812', userName: 'Marco Rossi', reparto: 'Ufficio Tecnico', submittedAt: '16/11/2026, 09:15',
+            selectionsByDay: {
+              lun: { primo: 'p1', secondo: 's1', contorno: 'c2', acqua: true, caffe: true, panino: false, note: '' },
+              mar: { primo: 'p2', secondo: 's2', contorno: 'c3', acqua: true, caffe: false, panino: true, note: '' }
+            }
+          },
+          {
+            ticketId: '#PASTO-7390', userName: '', reparto: 'Amministrazione', submittedAt: '16/11/2026, 09:24',
+            selectionsByDay: {
+              lun: { primo: 'p2', secondo: 's2', contorno: 'c1', acqua: true, caffe: false, panino: false, note: 'Senza cipolla' }
+            }
+          },
+          {
+            ticketId: '#PASTO-2105', userName: 'Elena B.', reparto: 'Logistica', submittedAt: '16/11/2026, 09:42',
+            selectionsByDay: {
+              lun: { primo: 'p1', secondo: 's3', contorno: 'c3', acqua: false, caffe: true, panino: true, note: 'Senza lattosio' }
+            }
+          },
+          {
+            ticketId: '#PASTO-9044', userName: '', reparto: '', submittedAt: '16/11/2026, 10:05',
+            selectionsByDay: {
+              lun: { primo: 'p3', secondo: 's1', contorno: 'c2', acqua: true, caffe: true, panino: false, note: '' }
+            }
+          },
+          {
+            ticketId: '#PASTO-6518', userName: 'Luca Verdi', reparto: 'Produzione', submittedAt: '16/11/2026, 10:18',
+            selectionsByDay: {
+              lun: { primo: 'p2', secondo: 's1', contorno: 'c1', acqua: true, caffe: true, panino: true, note: 'Cottura ben cotta' }
+            }
+          }
+        ];
+      }
+
+      const state = {
+        theme: 'light',
+        barMode: 'mini', // 'mini' | 'fab' | 'inline'
+        viewMode: 'scroll', // 'scroll' | 'step'
+        activeStep: 'primo', // 'primo' | 'secondo' | 'contorno' | 'extra'
+        includeWeekend: false,
+        days: [],
+        activeDayId: 'lun',
+        ticketId: '',
+        userName: '',
+        groupTag: '',
+        webhookUrl: '',
+        managerPin: '1234',
+        isManagerUnlocked: false,
+        selections: {},
+        receivedOrders: []
+      };
+
+      function getStorage(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+      function setStorage(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+      function removeStorage(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+      function escapeHtml(s) {
+        return String(s ?? '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function generateTicketId() {
+        return '#PASTO-' + Math.floor(1000 + Math.random() * 9000);
+      }
+
+      function showToast(msg) {
+        const wrap = document.getElementById('mobileToastWrap');
+        const el = document.createElement('div');
+        el.className = 'mobile-toast';
+        el.textContent = msg;
+        wrap.appendChild(el);
+        setTimeout(() => el.remove(), 2500);
+      }
+
+      function copyText(text) {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.top = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          return ok;
+        } catch (e) { return false; }
+      }
+
+      function downloadFile(name, content, mime) {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+
+      function getVisibleDays() {
+        return state.days.filter(d => state.includeWeekend || !d.isWeekend);
+      }
+
+      function getDayById(id) {
+        return state.days.find(d => d.id === id) || state.days[0];
+      }
+
+      function ensureDaySelection(dayId) {
+        if (!state.selections[dayId]) {
+          state.selections[dayId] = {
+            primo: null, secondo: null, contorno: null,
+            acqua: false, caffe: false, panino: false, note: ''
+          };
+        }
+        return state.selections[dayId];
+      }
+
+      function isDayCompiled(dayId) {
+        const s = state.selections[dayId];
+        if (!s) return false;
+        return Boolean(s.primo || s.secondo || s.contorno || s.acqua || s.caffe || s.panino || (s.note && s.note.trim()));
+      }
+
+      function loadState() {
+        const savedTheme = getStorage(STORAGE_KEYS.THEME);
+        state.theme = (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : 'light';
+
+        const savedBar = getStorage(STORAGE_KEYS.MOBILE_BAR_MODE);
+        state.barMode = ['mini', 'fab', 'inline'].includes(savedBar) ? savedBar : 'mini';
+
+        const savedView = getStorage(STORAGE_KEYS.MOBILE_VIEW_MODE);
+        state.viewMode = (savedView === 'step' || savedView === 'scroll') ? savedView : 'scroll';
+
+        state.includeWeekend = getStorage(STORAGE_KEYS.INCLUDE_WEEKEND) === '1';
+
+        try {
+          const rawM = getStorage(STORAGE_KEYS.WEEK_MENU);
+          const parsed = rawM ? JSON.parse(rawM) : null;
+          if (Array.isArray(parsed) && parsed.length === 7) {
+            state.days = parsed.map(d => ({ ...d, short: d.short || d.name.slice(0, 3) }));
+          } else {
+            state.days = getDefaultDays();
+          }
+        } catch (e) {
+          state.days = getDefaultDays();
+        }
+
+        try {
+          const rawS = getStorage(STORAGE_KEYS.SELECTIONS);
+          state.selections = rawS ? JSON.parse(rawS) : {};
+        } catch (e) {
+          state.selections = {};
+        }
+
+        state.ticketId = getStorage(STORAGE_KEYS.TICKET_ID) || generateTicketId();
+        setStorage(STORAGE_KEYS.TICKET_ID, state.ticketId);
+
+        state.userName = getStorage(STORAGE_KEYS.USER_NAME) || '';
+        state.groupTag = getStorage(STORAGE_KEYS.GROUP_TAG) || '';
+        state.webhookUrl = getStorage(STORAGE_KEYS.WEBHOOK_URL) || '';
+        state.managerPin = getStorage(STORAGE_KEYS.MANAGER_PIN) || '1234';
+
+        try {
+          const rawO = getStorage(STORAGE_KEYS.RECEIVED_ORDERS);
+          if (rawO === null) {
+            state.receivedOrders = getDefaultSampleOrders();
+            setStorage(STORAGE_KEYS.RECEIVED_ORDERS, JSON.stringify(state.receivedOrders));
+          } else {
+            state.receivedOrders = JSON.parse(rawO);
+          }
+        } catch (e) {
+          state.receivedOrders = getDefaultSampleOrders();
+        }
+      }
+
+      function saveSelections() {
+        setStorage(STORAGE_KEYS.SELECTIONS, JSON.stringify(state.selections));
+      }
+
+      /* ======================================================================
+         RENDERING MOBILE UI
+         ====================================================================== */
+      function applyThemeAndModes() {
+        document.documentElement.setAttribute('data-theme', state.theme);
+        document.getElementById('themeIcon').textContent = state.theme === 'dark' ? '🌸' : '🌙';
+
+        // Modalità Vista (Scorrevole vs Passo-Passo)
+        document.body.classList.toggle('step-view-active', state.viewMode === 'step');
+        document.getElementById('modeScrollBtn').classList.toggle('active', state.viewMode === 'scroll');
+        document.getElementById('modeStepBtn').classList.toggle('active', state.viewMode === 'step');
+
+        document.querySelectorAll('[data-step-section]').forEach(sec => {
+          sec.classList.toggle('step-current', sec.dataset.stepSection === state.activeStep);
+        });
+
+        // Modalità Barra Inferiore (Mini, FAB, Inline)
+        const dock = document.getElementById('mobileBottomDock');
+        dock.classList.remove('mode-fab', 'mode-inline');
+        document.body.classList.remove('bar-mode-fab', 'bar-mode-inline');
+
+        if (state.barMode === 'fab') {
+          dock.classList.add('mode-fab');
+          document.body.classList.add('bar-mode-fab');
+          document.getElementById('dockToggleIcon').textContent = '🔼';
+        } else if (state.barMode === 'inline') {
+          dock.classList.add('mode-inline');
+          document.body.classList.add('bar-mode-inline');
+          document.getElementById('dockToggleIcon').textContent = '📌';
+        } else {
+          document.getElementById('dockToggleIcon').textContent = '🔽';
+        }
+
+        document.querySelectorAll('[data-set-barmode]').forEach(b => {
+          b.classList.toggle('active', b.dataset.setBarmode === state.barMode);
+        });
+      }
+
+      function renderTopBarAndCarousel() {
+        document.getElementById('topTicketDisplay').textContent = state.ticketId;
+        document.getElementById('privacyTicketEcho').textContent = state.ticketId;
+        document.getElementById('topOrdersBadge').textContent = state.receivedOrders.length;
+
+        const visible = getVisibleDays();
+        if (!visible.some(d => d.id === state.activeDayId)) {
+          state.activeDayId = visible[0].id;
+        }
+
+        const carousel = document.getElementById('daysCarousel');
+        carousel.innerHTML = visible.map(day => {
+          const isActive = day.id === state.activeDayId;
+          const compiled = isDayCompiled(day.id);
+          const shortName = day.short || day.name.slice(0, 3);
+          return `
+            <button
+              type="button"
+              class="day-pill-btn ${isActive ? 'active' : ''} ${compiled ? 'compiled' : ''}"
+              data-day-id="${escapeHtml(day.id)}"
+              role="tab"
+              aria-selected="${isActive}"
+            >
+              <div class="day-pill-top">
+                <span class="day-pill-name">${escapeHtml(shortName)}</span>
+                <span class="day-pill-dot">${compiled ? '✓' : '•'}</span>
+              </div>
+              <span class="day-pill-date">${escapeHtml(day.date)}</span>
+            </button>
+          `;
+        }).join('');
+      }
+
+      function renderSubnavAndStepPills() {
+        const day = getDayById(state.activeDayId);
+        const sel = ensureDaySelection(day.id);
+
+        document.getElementById('subnavDayName').textContent = day.name;
+        document.getElementById('subnavDayDate').textContent = day.date;
+
+        const checks = {
+          primo: Boolean(sel.primo),
+          secondo: Boolean(sel.secondo),
+          contorno: Boolean(sel.contorno),
+          extra: Boolean(sel.acqua || sel.caffe || sel.panino || (sel.note && sel.note.trim()))
+        };
+
+        const labels = {
+          primo: checks.primo ? '✓ Primo' : '1️⃣ Primo',
+          secondo: checks.secondo ? '✓ Secondo' : '2️⃣ Secondo',
+          contorno: checks.contorno ? '✓ Contorno' : '3️⃣ Contorno',
+          extra: checks.extra ? '✓ Extra' : '🥖 Extra'
+        };
+
+        ['primo', 'secondo', 'contorno', 'extra'].forEach(key => {
+          const pill = document.getElementById('jumpPill_' + key);
+          pill.textContent = labels[key];
+          pill.classList.toggle('done', checks[key]);
+          pill.classList.toggle('active-step', state.activeStep === key);
+        });
+      }
+
+      /* Gestione Etichette Piatti (Min. 1 - Max. 3) */
+      const PRESET_DISH_TAGS = [
+        '🍅 Classico',
+        '🌿 Vegetariano',
+        '🌱 Vegano',
+        '🥩 Carne',
+        '🐟 Pesce',
+        '🧀 Latticini',
+        '🌾 Senza Glutine',
+        '🌶️ Piccante',
+        '❄️ Freddo',
+        '🥗 Leggero'
+      ];
+
+      function stripEmojiPrefix(tagStr) {
+        return String(tagStr || '')
+          .replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\s]+/u, '')
+          .trim()
+          .toLowerCase();
+      }
+
+      function formatTagWithIcon(rawTag) {
+        const clean = String(rawTag || '').trim();
+        if (!clean) return '🍅 Classico';
+        const norm = stripEmojiPrefix(clean);
+        const matched = PRESET_DISH_TAGS.find(p => stripEmojiPrefix(p) === norm);
+        return matched || clean;
+      }
+
+      function getDishTags(item) {
+        if (!item) return ['🍅 Classico'];
+        let rawList = [];
+        if (Array.isArray(item.tags) && item.tags.length > 0) {
+          rawList = item.tags.map(t => String(t || '').trim()).filter(Boolean);
+        } else if (typeof item.tag === 'string' && item.tag.trim()) {
+          rawList = item.tag.split(/[·,]/).map(t => t.trim()).filter(Boolean);
+        }
+        if (rawList.length === 0) {
+          rawList = ['🍅 Classico'];
+        }
+        const unique = [];
+        rawList.forEach(t => {
+          const formatted = formatTagWithIcon(t);
+          if (!unique.some(u => stripEmojiPrefix(u) === stripEmojiPrefix(formatted))) {
+            unique.push(formatted);
+          }
+        });
+        const finalTags = unique.slice(0, 3);
+        item.tags = finalTags;
+        item.tag = finalTags.join(' · ');
+        return finalTags;
+      }
+
+      function setDishTags(item, nextTags) {
+        const cleaned = [];
+        (nextTags || []).forEach(t => {
+          const str = String(t || '').trim();
+          if (!str) return;
+          const formatted = formatTagWithIcon(str);
+          if (!cleaned.some(u => stripEmojiPrefix(u) === stripEmojiPrefix(formatted))) {
+            cleaned.push(formatted);
+          }
+        });
+        const bounded = cleaned.slice(0, 3);
+        if (bounded.length === 0) bounded.push('🍅 Classico');
+        item.tags = bounded;
+        item.tag = bounded.join(' · ');
+      }
+
+      function getTagToneClass(tagText) {
+        const norm = stripEmojiPrefix(tagText);
+        if (norm.includes('vegano') || norm.includes('vegetariano') || norm.includes('leggero')) {
+          return 'tag-tone-green';
+        }
+        if (norm.includes('pesce') || norm.includes('freddo')) {
+          return 'tag-tone-blue';
+        }
+        if (norm.includes('carne') || norm.includes('piccante')) {
+          return 'tag-tone-rose';
+        }
+        if (norm.includes('glutine') || norm.includes('latticini')) {
+          return 'tag-tone-amber';
+        }
+        return '';
+      }
+
+      function renderCourseStack(courseKey) {
+        const day = getDayById(state.activeDayId);
+        const sel = ensureDaySelection(day.id);
+        const currentId = sel[courseKey];
+        const items = day[courseKey] || [];
+
+        const noneBtn = document.getElementById('noneBtn_' + courseKey);
+        noneBtn.classList.toggle('selected', currentId === null);
+
+        const stack = document.getElementById('stack_' + courseKey);
+        stack.innerHTML = items.map((item, idx) => {
+          const isSelected = currentId === item.id;
+          const dishTags = getDishTags(item);
+          return `
+            <button
+              type="button"
+              class="mobile-dish-card ${isSelected ? 'selected' : ''}"
+              data-course="${courseKey}"
+              data-choice-id="${escapeHtml(item.id)}"
+              aria-pressed="${isSelected}"
+            >
+              <div class="dish-card-info">
+                <div class="dish-card-topline">
+                  <span class="dish-opt-label">Scelta ${idx + 1}</span>
+                  ${dishTags.map(t => `<span class="dish-diet-tag ${getTagToneClass(t)}">${escapeHtml(t)}</span>`).join('')}
+                </div>
+                <h3 class="dish-card-name">${escapeHtml(item.name)}</h3>
+                <p class="dish-card-desc">${escapeHtml(item.desc)}</p>
+              </div>
+              <div class="dish-thumb-check" aria-hidden="true">✓</div>
+            </button>
+          `;
+        }).join('');
+      }
+
+      function renderExtrasAndNotes() {
+        const day = getDayById(state.activeDayId);
+        const sel = ensureDaySelection(day.id);
+
+        const extrasMeta = [
+          { key: 'acqua', icon: '💧', label: 'Acqua' },
+          { key: 'caffe', icon: '☕', label: 'Caffè' },
+          { key: 'panino', icon: '🥖', label: 'Panino' }
+        ];
+
+        document.getElementById('mobileExtrasGrid').innerHTML = extrasMeta.map(ex => {
+          const active = Boolean(sel[ex.key]);
+          return `
+            <button
+              type="button"
+              class="mobile-extra-btn ${active ? 'active' : ''}"
+              data-extra-key="${ex.key}"
+              aria-pressed="${active}"
+            >
+              <span class="mobile-extra-icon">${ex.icon}</span>
+              <span class="mobile-extra-title">${ex.label}</span>
+              <span class="mobile-extra-status">${active ? 'SÌ ✓' : 'NO'}</span>
+            </button>
+          `;
+        }).join('');
+
+        const noteInput = document.getElementById('mobileNoteInput');
+        if (document.activeElement !== noteInput) {
+          noteInput.value = sel.note || '';
+        }
+      }
+
+      function renderBottomDock() {
+        const visible = getVisibleDays();
+        const compiledCount = visible.filter(d => isDayCompiled(d.id)).length;
+
+        document.getElementById('dockCountPill').textContent = compiledCount;
+        document.getElementById('dockMainLine').textContent =
+          compiledCount === 1 ? '1 giorno pronto per l’invio' : `${compiledCount} giorni pronti per l’invio`;
+
+        const day = getDayById(state.activeDayId);
+        const sel = ensureDaySelection(day.id);
+        const chosen = [];
+        if (sel.primo) {
+          const p = day.primo.find(x => x.id === sel.primo);
+          if (p) chosen.push('1° ' + p.name);
+        }
+        if (sel.secondo) {
+          const s = day.secondo.find(x => x.id === sel.secondo);
+          if (s) chosen.push('2° ' + s.name);
+        }
+        if (sel.contorno) {
+          const c = day.contorno.find(x => x.id === sel.contorno);
+          if (c) chosen.push('Cont. ' + c.name);
+        }
+        const ex = [];
+        if (sel.acqua) ex.push('Acqua');
+        if (sel.caffe) ex.push('Caffè');
+        if (sel.panino) ex.push('Panino');
+        if (ex.length) chosen.push('+ ' + ex.join(', '));
+
+        document.getElementById('dockSubLine').textContent =
+          chosen.length > 0 ? `${day.short || day.name}: ${chosen.join(' · ')}` : `${day.name}: nessuna scelta`;
+      }
+
+      function renderAll() {
+        applyThemeAndModes();
+        renderTopBarAndCarousel();
+        renderSubnavAndStepPills();
+        renderCourseStack('primo');
+        renderCourseStack('secondo');
+        renderCourseStack('contorno');
+        renderExtrasAndNotes();
+        renderBottomDock();
+      }
+
+      /* ======================================================================
+         COSTRUZIONE ORDINE & BOTTOM-SHEET RIEPILOGO
+         ====================================================================== */
+      function buildOrderPayload() {
+        const visible = getVisibleDays();
+        const giorni = [];
+
+        visible.forEach(day => {
+          if (!isDayCompiled(day.id)) return;
+          const sel = ensureDaySelection(day.id);
+          const p = day.primo.find(x => x.id === sel.primo);
+          const s = day.secondo.find(x => x.id === sel.secondo);
+          const c = day.contorno.find(x => x.id === sel.contorno);
+
+          giorni.push({
+            dayId: day.id,
+            giorno: day.name,
+            data: day.date,
+            etichetta: `${day.name} (${day.date})`,
+            primo: p ? p.name : 'Nessun primo',
+            secondo: s ? s.name : 'Nessun secondo',
+            contorno: c ? c.name : 'Nessun contorno',
+            acqua: sel.acqua ? 'SÌ' : 'NO',
+            caffe: sel.caffe ? 'SÌ' : 'NO',
+            panino: sel.panino ? 'SÌ' : 'NO',
+            note: (sel.note || '').trim()
+          });
+        });
+
+        return {
+          ticketId: state.ticketId,
+          nomeUtente: state.userName.trim(),
+          reparto: state.groupTag.trim(),
+          giorni
+        };
+      }
+
+      function renderReviewSheet() {
+        document.getElementById('sheetTicketCode').textContent = state.ticketId;
+        document.getElementById('sheetUserNameInput').value = state.userName;
+        document.getElementById('sheetUserGroupInput').value = state.groupTag;
+
+        const payload = buildOrderPayload();
+        const list = document.getElementById('sheetDaysList');
+
+        if (payload.giorni.length === 0) {
+          list.innerHTML = `
+            <div style="padding:18px; text-align:center; border-radius:var(--radius-md); background:var(--surface-soft); border:1px dashed var(--border); color:var(--text-secondary); font-size:0.84rem;">
+              Non hai ancora selezionato piatti.<br>Chiudi questo pannello e tocca i piatti desiderati.
+            </div>
+          `;
+          return;
+        }
+
+        list.innerHTML = payload.giorni.map(g => `
+          <div style="padding:11px 13px; border-radius:var(--radius-md); background:var(--surface); border:1.5px solid var(--border-subtle); font-size:0.82rem; display:flex; flex-direction:column; gap:4px;">
+            <strong style="color:var(--accent); font-size:0.86rem;">📅 ${escapeHtml(g.etichetta)}</strong>
+            <div><strong>1°:</strong> ${escapeHtml(g.primo)}</div>
+            <div><strong>2°:</strong> ${escapeHtml(g.secondo)}</div>
+            <div><strong>Cont.:</strong> ${escapeHtml(g.contorno)}</div>
+            <div style="color:var(--privacy); font-weight:800;">
+              💧 Acqua: ${g.acqua} · ☕ Caffè: ${g.caffe} · 🥖 Panino: ${g.panino}
+            </div>
+            ${g.note ? `<div style="color:var(--accent); font-weight:700;">📝 Note: ${escapeHtml(g.note)}</div>` : ''}
+          </div>
+        `).join('');
+      }
+
+      /* ======================================================================
+         AREA GESTORE MOBILE (SPOGLIO CUCINA & CARD ORDINAZIONI)
+         ====================================================================== */
+      function populateManagerSelects() {
+        const visible = getVisibleDays();
+        const kSel = document.getElementById('mKitchenDaySelect');
+        const eSel = document.getElementById('mEditDaySelect');
+
+        const curK = kSel.value || state.activeDayId;
+        kSel.innerHTML = visible.map(d => `<option value="${d.id}">${escapeHtml(d.name)} (${escapeHtml(d.date)})</option>`).join('');
+        if (visible.some(d => d.id === curK)) kSel.value = curK;
+
+        const curE = eSel.value || state.activeDayId;
+        eSel.innerHTML = state.days.map(d => `<option value="${d.id}">${escapeHtml(d.name)} (${escapeHtml(d.date)})</option>`).join('');
+        if (state.days.some(d => d.id === curE)) eSel.value = curE;
+      }
+
+      function computeDayKitchenData(dayId) {
+        const day = getDayById(dayId);
+        const stats = {
+          totalOrders: 0,
+          totPrimi: 0, totSecondi: 0, totContorni: 0,
+          primoNone: 0, secondoNone: 0, contornoNone: 0,
+          primo: { p1: 0, p2: 0, p3: 0 },
+          secondo: { s1: 0, s2: 0, s3: 0 },
+          contorno: { c1: 0, c2: 0, c3: 0 },
+          acqua: 0, caffe: 0, panino: 0,
+          orders: []
+        };
+
+        state.receivedOrders.forEach(ord => {
+          const sel = ord.selectionsByDay && ord.selectionsByDay[dayId];
+          if (!sel) return;
+          const active = Boolean(sel.primo || sel.secondo || sel.contorno || sel.acqua || sel.caffe || sel.panino || (sel.note && sel.note.trim()));
+          if (!active) return;
+
+          stats.totalOrders++;
+          if (sel.primo && stats.primo[sel.primo] !== undefined) {
+            stats.primo[sel.primo]++;
+            stats.totPrimi++;
+          } else {
+            stats.primoNone++;
+          }
+
+          if (sel.secondo && stats.secondo[sel.secondo] !== undefined) {
+            stats.secondo[sel.secondo]++;
+            stats.totSecondi++;
+          } else {
+            stats.secondoNone++;
+          }
+
+          if (sel.contorno && stats.contorno[sel.contorno] !== undefined) {
+            stats.contorno[sel.contorno]++;
+            stats.totContorni++;
+          } else {
+            stats.contornoNone++;
+          }
+
+          if (sel.acqua) stats.acqua++;
+          if (sel.caffe) stats.caffe++;
+          if (sel.panino) stats.panino++;
+
+          const pObj = day.primo.find(x => x.id === sel.primo);
+          const sObj = day.secondo.find(x => x.id === sel.secondo);
+          const cObj = day.contorno.find(x => x.id === sel.contorno);
+
+          stats.orders.push({
+            ticketId: ord.ticketId,
+            userName: (ord.userName || '').trim(),
+            reparto: ord.reparto || '',
+            submittedAt: ord.submittedAt || '',
+            primo: pObj ? pObj.name : '—',
+            secondo: sObj ? sObj.name : '—',
+            contorno: cObj ? cObj.name : '—',
+            acqua: Boolean(sel.acqua),
+            caffe: Boolean(sel.caffe),
+            panino: Boolean(sel.panino),
+            note: (sel.note || '').trim()
+          });
+        });
+
+        return { day, stats };
+      }
+
+      function renderMobileKitchenDashboard() {
+        const dayId = document.getElementById('mKitchenDaySelect').value || state.activeDayId;
+        const { day, stats } = computeDayKitchenData(dayId);
+        const denom = Math.max(1, stats.totalOrders);
+
+        document.getElementById('mKpiGrid').innerHTML = `
+          <div class="m-kpi-card hero">
+            <div>
+              <div class="m-kpi-label">📋 Totale Ordinazioni Giornata</div>
+              <div style="font-size:0.78rem; font-weight:800;">${escapeHtml(day.name)} (${escapeHtml(day.date)})</div>
+            </div>
+            <div class="m-kpi-val" style="font-size:1.9rem;">${stats.totalOrders}</div>
+          </div>
+
+          <div class="m-kpi-courses-row">
+            <div class="m-kpi-course-box">
+              <span class="m-kpi-label">🍝 Primi</span>
+              <span class="m-kpi-val" style="font-size:1.35rem;">${stats.totPrimi}</span>
+              <span class="m-kpi-course-sub">${stats.primoNone} senza</span>
+            </div>
+            <div class="m-kpi-course-box">
+              <span class="m-kpi-label">🥩 Secondi</span>
+              <span class="m-kpi-val" style="font-size:1.35rem;">${stats.totSecondi}</span>
+              <span class="m-kpi-course-sub">${stats.secondoNone} senza</span>
+            </div>
+            <div class="m-kpi-course-box">
+              <span class="m-kpi-label">🥗 Contorni</span>
+              <span class="m-kpi-val" style="font-size:1.35rem;">${stats.totContorni}</span>
+              <span class="m-kpi-course-sub">${stats.contornoNone} senza</span>
+            </div>
+          </div>
+
+          <div class="m-kpi-extras-row">
+            <span class="m-kpi-label">Complementi:</span>
+            <div style="display:flex; gap:12px; font-family:var(--font-mono); font-size:0.88rem; font-weight:900; color:var(--accent);">
+              <span>💧 Acqua: ${stats.acqua}</span>
+              <span>☕ Caffè: ${stats.caffe}</span>
+              <span>🥖 Panino: ${stats.panino}</span>
+            </div>
+          </div>
+        `;
+
+        function buildCourseCountCard(title, list, map, courseTotal, noneCount) {
+          return `
+            <div style="padding:11px 12px; border-radius:var(--radius-md); background:var(--surface); border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <strong style="font-size:0.78rem; color:var(--accent); text-transform:uppercase;">${escapeHtml(title)}</strong>
+                <span style="font-family:var(--font-mono); font-size:0.72rem; font-weight:900; padding:2px 8px; border-radius:999px; background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-border);">
+                  Totale: ${courseTotal}
+                </span>
+              </div>
+              ${list.map((it, idx) => {
+                const c = map[it.id] || 0;
+                const pct = stats.totalOrders > 0 ? Math.round((c / denom) * 100) : 0;
+                const tags = getDishTags(it);
+                return `
+                  <div class="count-progress-row">
+                    <div class="count-progress-top">
+                      <span><strong>#${idx + 1}</strong> ${escapeHtml(it.name)} <small style="color:var(--text-muted); font-weight:600;">(${escapeHtml(tags.join(', '))})</small></span>
+                      <span style="font-family:var(--font-mono); color:var(--accent); font-weight:900; white-space:nowrap;">${c} <small style="color:var(--text-muted); font-weight:700;">(${pct}%)</small></span>
+                    </div>
+                    <div class="count-progress-bar"><div class="count-progress-fill" style="width:${pct}%"></div></div>
+                  </div>
+                `;
+              }).join('')}
+              <div style="font-size:0.72rem; color:var(--text-muted); padding-top:3px; border-top:1px dashed var(--border-subtle); display:flex; justify-content:space-between;">
+                <span>Nessuna scelta per questa portata:</span>
+                <strong>${noneCount}</strong>
+              </div>
+            </div>
+          `;
+        }
+
+        document.getElementById('mDishCountsList').innerHTML =
+          buildCourseCountCard('🍝 3 Primi Piatti', day.primo, stats.primo, stats.totPrimi, stats.primoNone) +
+          buildCourseCountCard('🥩 3 Secondi Piatti', day.secondo, stats.secondo, stats.totSecondi, stats.secondoNone) +
+          buildCourseCountCard('🥗 3 Contorni', day.contorno, stats.contorno, stats.totContorni, stats.contornoNone);
+
+        document.getElementById('mDayOrdersCount').textContent = stats.orders.length;
+        const cardsList = document.getElementById('mOrdersCardsList');
+
+        if (stats.orders.length === 0) {
+          cardsList.innerHTML = `<div style="padding:14px; text-align:center; color:var(--text-muted); font-size:0.82rem;">Nessun ordine per questa data.</div>`;
+        } else {
+          cardsList.innerHTML = stats.orders.map(o => {
+            const ex = [o.acqua ? '💧 Acqua' : '', o.caffe ? '☕ Caffè' : '', o.panino ? '🥖 Panino' : ''].filter(Boolean).join(' · ') || 'Nessun extra';
+            return `
+              <div class="mobile-order-card">
+                <div class="moc-header">
+                  <span style="font-family:var(--font-mono); font-weight:900; font-size:0.82rem; color:var(--accent);">${escapeHtml(o.ticketId)}</span>
+                  ${o.userName
+                    ? `<span class="moc-badge-user named">👤 ${escapeHtml(o.userName)}</span>`
+                    : `<span class="moc-badge-user anon">🕵️ Anonimo</span>`
+                  }
+                </div>
+                <div class="moc-dishes">
+                  <div><strong>1° Primo:</strong> ${escapeHtml(o.primo)}</div>
+                  <div><strong>2° Secondo:</strong> ${escapeHtml(o.secondo)}</div>
+                  <div><strong>3° Contorno:</strong> ${escapeHtml(o.contorno)}</div>
+                  <div style="color:var(--privacy); font-weight:800;">${ex}</div>
+                  ${o.note ? `<div style="color:var(--accent); font-weight:800;">📝 Note: ${escapeHtml(o.note)}</div>` : ''}
+                </div>
+                <div class="moc-footer">
+                  <span style="font-size:0.7rem; color:var(--text-muted);">${escapeHtml(o.reparto ? o.reparto + ' · ' : '')}${escapeHtml(o.submittedAt)}</span>
+                  <button type="button" class="m-btn-danger" style="min-height:28px; padding:3px 9px; font-size:0.72rem;" data-del-order="${escapeHtml(o.ticketId)}">Elimina</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      function syncDraftInputsToCurrentDay() {
+        const dayId = document.getElementById('mEditDaySelect').value || state.activeDayId;
+        const day = getDayById(dayId);
+        const nameInp = document.getElementById('mEditDayName');
+        const dateInp = document.getElementById('mEditDayDate');
+        if (nameInp && nameInp.value.trim()) {
+          day.name = nameInp.value.trim();
+          day.short = day.name.slice(0, 3).toUpperCase();
+        }
+        if (dateInp && dateInp.value.trim()) {
+          day.date = dateInp.value.trim();
+        }
+        document.querySelectorAll('[data-medit-c]').forEach(inp => {
+          const c = inp.dataset.meditC;
+          const i = Number(inp.dataset.meditI);
+          const f = inp.dataset.meditF;
+          if (day[c] && day[c][i]) {
+            day[c][i][f] = inp.value;
+          }
+        });
+      }
+
+      function renderMobileMenuEditor() {
+        const dayId = document.getElementById('mEditDaySelect').value || state.activeDayId;
+        const day = getDayById(dayId);
+        document.getElementById('mIncludeWeekendChk').checked = state.includeWeekend;
+        document.getElementById('mEditDayName').value = day.name;
+        document.getElementById('mEditDayDate').value = day.date;
+
+        const meta = [
+          { key: 'primo', title: '🍝 3 Primi Piatti', single: 'Primo' },
+          { key: 'secondo', title: '🥩 3 Secondi Piatti', single: 'Secondo' },
+          { key: 'contorno', title: '🥗 3 Contorni', single: 'Contorno' }
+        ];
+
+        document.getElementById('mEditCoursesStack').innerHTML = meta.map(m => `
+          <div style="padding:10px; border-radius:var(--radius-md); background:var(--surface); border:1px solid var(--border-subtle); display:flex; flex-direction:column; gap:10px;">
+            <strong style="font-size:0.83rem; color:var(--accent);">${m.title}</strong>
+            ${day[m.key].map((it, idx) => {
+              const dishTags = getDishTags(it);
+              return `
+                <div class="m-dish-edit-card">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-family:var(--font-mono); font-size:0.72rem; font-weight:900; color:var(--accent); text-transform:uppercase;">
+                      ${m.single} #${idx + 1}
+                    </span>
+                    <span style="font-size:0.68rem; color:var(--text-muted); font-weight:700;">Modifica nome, ingredienti ed etichette</span>
+                  </div>
+
+                  <input
+                    type="text"
+                    class="mobile-input"
+                    data-medit-c="${m.key}"
+                    data-medit-i="${idx}"
+                    data-medit-f="name"
+                    value="${escapeHtml(it.name)}"
+                    placeholder="Nome piatto ${idx + 1} (es. Pasta al sugo)"
+                  >
+
+                  <input
+                    type="text"
+                    class="mobile-input"
+                    style="font-size:0.82rem; padding:8px 10px;"
+                    data-medit-c="${m.key}"
+                    data-medit-i="${idx}"
+                    data-medit-f="desc"
+                    value="${escapeHtml(it.desc)}"
+                    placeholder="Descrizione breve / ingredienti"
+                  >
+
+                  <!-- Editor Etichette Interattivo (Min. 1 - Max. 3) -->
+                  <div class="m-tag-editor-box">
+                    <div class="m-tag-editor-header">
+                      <span>🏷️ Etichette attive (min. 1 - max. 3)</span>
+                      <span class="m-tag-counter-badge">${dishTags.length}/3</span>
+                    </div>
+
+                    <div class="m-active-tags-wrap">
+                      ${dishTags.map((t, tIdx) => `
+                        <span class="m-active-tag-chip">
+                          <span>${escapeHtml(t)}</span>
+                          <button
+                            type="button"
+                            class="m-active-tag-remove"
+                            data-tag-action="remove"
+                            data-tag-course="${m.key}"
+                            data-tag-dish="${idx}"
+                            data-tag-index="${tIdx}"
+                            title="Rimuovi etichetta"
+                            aria-label="Rimuovi etichetta ${escapeHtml(t)}"
+                          >×</button>
+                        </span>
+                      `).join('')}
+                    </div>
+
+                    <div style="font-size:0.69rem; color:var(--text-secondary); font-weight:700;">
+                      Tocca per attivare o sostituire rapidamente (1-Tap):
+                    </div>
+
+                    <div class="m-preset-tags-scroll">
+                      ${PRESET_DISH_TAGS.map(preset => {
+                        const isSelected = dishTags.some(t => stripEmojiPrefix(t) === stripEmojiPrefix(preset));
+                        return `
+                          <button
+                            type="button"
+                            class="m-preset-tag-btn ${isSelected ? 'is-selected' : ''}"
+                            data-tag-action="toggle-preset"
+                            data-tag-course="${m.key}"
+                            data-tag-dish="${idx}"
+                            data-tag-value="${escapeHtml(preset)}"
+                          >${isSelected ? '✓ ' : '+ '}${escapeHtml(preset)}</button>
+                        `;
+                      }).join('')}
+                    </div>
+
+                    <div class="m-custom-tag-row">
+                      <input
+                        type="text"
+                        class="mobile-input"
+                        style="font-size:0.78rem; padding:7px 10px; flex:1;"
+                        maxlength="24"
+                        id="customTagInp_${m.key}_${idx}"
+                        placeholder="+ Nuova etichetta (es. Km 0, Bio...)"
+                      >
+                      <button
+                        type="button"
+                        class="m-btn-secondary"
+                        style="min-height:34px; padding:6px 11px; font-size:0.75rem;"
+                        data-tag-action="add-custom"
+                        data-tag-course="${m.key}"
+                        data-tag-dish="${idx}"
+                      >+ Aggiungi</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `).join('');
+      }
+
+      /* ======================================================================
+         APERTURA / CHIUSURA BOTTOM-SHEET & EVENT LISTENERS
+         ====================================================================== */
+      function openSheet(id) {
+        if (id === 'reviewSheet') renderReviewSheet();
+        if (id === 'managerSheet') {
+          populateManagerSelects();
+          renderMobileKitchenDashboard();
+          renderMobileMenuEditor();
+          document.getElementById('mNewPinInput').value = state.managerPin;
+          document.getElementById('mWebhookInput').value = state.webhookUrl;
+        }
+        document.getElementById(id).classList.add('open');
+      }
+
+      function closeSheet(id) {
+        document.getElementById(id).classList.remove('open');
+      }
+
+      function bindEvents() {
+        // Tema Chiaro Rosato / Dark Rose
+        document.getElementById('themeSwitchBtn').addEventListener('click', () => {
+          state.theme = state.theme === 'dark' ? 'light' : 'dark';
+          setStorage(STORAGE_KEYS.THEME, state.theme);
+          applyThemeAndModes();
+        });
+
+        // Rigenerazione Ticket
+        function regenTicket() {
+          state.ticketId = generateTicketId();
+          setStorage(STORAGE_KEYS.TICKET_ID, state.ticketId);
+          renderTopBarAndCarousel();
+          if (document.getElementById('reviewSheet').classList.contains('open')) renderReviewSheet();
+          showToast('Nuovo Ticket: ' + state.ticketId);
+        }
+        document.getElementById('topTicketBtn').addEventListener('click', regenTicket);
+        document.getElementById('sheetRegenTicketBtn').addEventListener('click', regenTicket);
+
+        // Selezione Giorno dal Carosello Touch
+        document.getElementById('daysCarousel').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-day-id]');
+          if (!btn) return;
+          state.activeDayId = btn.dataset.dayId;
+          state.activeStep = 'primo';
+          renderAll();
+          btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        });
+
+        // Giorno Precedente / Successivo
+        function shiftDay(delta) {
+          const visible = getVisibleDays();
+          const idx = visible.findIndex(d => d.id === state.activeDayId);
+          const next = visible[(idx + delta + visible.length) % visible.length];
+          state.activeDayId = next.id;
+          state.activeStep = 'primo';
+          renderAll();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        document.getElementById('prevDayMobileBtn').addEventListener('click', () => shiftDay(-1));
+        document.getElementById('nextDayMobileBtn').addEventListener('click', () => shiftDay(1));
+
+        // Switch Modalità Scorrevole vs Passo-Passo
+        document.getElementById('modeScrollBtn').addEventListener('click', () => {
+          state.viewMode = 'scroll';
+          setStorage(STORAGE_KEYS.MOBILE_VIEW_MODE, 'scroll');
+          applyThemeAndModes();
+        });
+        document.getElementById('modeStepBtn').addEventListener('click', () => {
+          state.viewMode = 'step';
+          setStorage(STORAGE_KEYS.MOBILE_VIEW_MODE, 'step');
+          applyThemeAndModes();
+        });
+
+        // Barra Salto Rapido Portate (1° Primo, 2° Secondo, 3° Contorno, Extra)
+        function jumpToCourse(stepKey) {
+          state.activeStep = stepKey;
+          applyThemeAndModes();
+          renderSubnavAndStepPills();
+          if (state.viewMode === 'scroll') {
+            const sec = document.getElementById('sec_' + stepKey);
+            if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+
+        document.getElementById('courseJumpBar').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-jump-step]');
+          if (btn) jumpToCourse(btn.dataset.jumpStep);
+        });
+
+        document.querySelectorAll('[data-go-step]').forEach(btn => {
+          btn.addEventListener('click', () => jumpToCourse(btn.dataset.goStep));
+        });
+
+        // Tocco su Card Piatti, "Nessuno", Extra e Chip Note
+        document.getElementById('mobileMainTouchArea').addEventListener('click', (e) => {
+          const dishCard = e.target.closest('[data-course][data-choice-id]');
+          if (dishCard) {
+            const course = dishCard.dataset.course;
+            const choiceId = dishCard.dataset.choiceId;
+            const sel = ensureDaySelection(state.activeDayId);
+            sel[course] = sel[course] === choiceId ? null : choiceId;
+            saveSelections();
+            renderAll();
+
+            // In modalità Passo-Passo avanza automaticamente alla portata successiva dopo la selezione
+            if (state.viewMode === 'step' && sel[course]) {
+              const order = ['primo', 'secondo', 'contorno', 'extra'];
+              const nextStep = order[order.indexOf(course) + 1];
+              if (nextStep) {
+                setTimeout(() => jumpToCourse(nextStep), 180);
+              }
+            }
+            return;
+          }
+
+          const clearBtn = e.target.closest('[data-clear-course]');
+          if (clearBtn) {
+            const course = clearBtn.dataset.clearCourse;
+            const sel = ensureDaySelection(state.activeDayId);
+            sel[course] = null;
+            saveSelections();
+            renderAll();
+            return;
+          }
+
+          const extraBtn = e.target.closest('[data-extra-key]');
+          if (extraBtn) {
+            const key = extraBtn.dataset.extraKey;
+            const sel = ensureDaySelection(state.activeDayId);
+            sel[key] = !sel[key];
+            saveSelections();
+            renderAll();
+            return;
+          }
+
+          const noteChip = e.target.closest('[data-add-note]');
+          if (noteChip) {
+            const snippet = noteChip.dataset.addNote;
+            const sel = ensureDaySelection(state.activeDayId);
+            const cur = (sel.note || '').trim();
+            if (!cur.toLowerCase().includes(snippet.toLowerCase())) {
+              sel.note = cur ? `${cur}, ${snippet}` : snippet;
+              document.getElementById('mobileNoteInput').value = sel.note;
+              saveSelections();
+              renderAll();
+            }
+            return;
+          }
+
+          const barModeBtn = e.target.closest('[data-set-barmode]');
+          if (barModeBtn) {
+            state.barMode = barModeBtn.dataset.setBarmode;
+            setStorage(STORAGE_KEYS.MOBILE_BAR_MODE, state.barMode);
+            applyThemeAndModes();
+          }
+        });
+
+        // Azzera giorno attivo
+        document.getElementById('resetDayMobileBtn').addEventListener('click', () => {
+          delete state.selections[state.activeDayId];
+          saveSelections();
+          renderAll();
+          showToast('Giorno azzerato');
+        });
+
+        // Protezione Anti-Copertura Note (nasconde la barra flottante quando si digita nelle note)
+        const noteInput = document.getElementById('mobileNoteInput');
+        noteInput.addEventListener('focus', () => {
+          document.body.classList.add('keyboard-open');
+          setTimeout(() => {
+            noteInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 150);
+        });
+
+        noteInput.addEventListener('blur', () => {
+          document.body.classList.remove('keyboard-open');
+        });
+
+        noteInput.addEventListener('input', (e) => {
+          const sel = ensureDaySelection(state.activeDayId);
+          sel.note = e.target.value;
+          saveSelections();
+          renderTopBarAndCarousel();
+          renderSubnavAndStepPills();
+          renderBottomDock();
+        });
+
+        // Toggle rapido Mini Barra <-> Icona FAB in angolo
+        document.getElementById('toggleFabModeBtn').addEventListener('click', () => {
+          state.barMode = state.barMode === 'fab' ? 'mini' : 'fab';
+          setStorage(STORAGE_KEYS.MOBILE_BAR_MODE, state.barMode);
+          applyThemeAndModes();
+        });
+
+        // Apertura / chiusura Bottom-Sheets
+        document.getElementById('openReviewSheetBtn').addEventListener('click', () => openSheet('reviewSheet'));
+        document.getElementById('openPrivacySheetBtn').addEventListener('click', () => openSheet('privacySheet'));
+        document.getElementById('openManagerSheetBtn').addEventListener('click', () => {
+          if (state.isManagerUnlocked) {
+            openSheet('managerSheet');
+          } else {
+            document.getElementById('mobilePinInput').value = '';
+            openSheet('pinSheet');
+          }
+        });
+
+        document.querySelectorAll('[data-close-sheet]').forEach(btn => {
+          btn.addEventListener('click', () => closeSheet(btn.dataset.closeSheet));
+        });
+        document.querySelectorAll('.sheet-backdrop').forEach(bd => {
+          bd.addEventListener('click', (e) => {
+            if (e.target === bd) closeSheet(bd.id);
+          });
+        });
+
+        // Salvataggio Nome Facoltativo (visibile solo al gestore) e Reparto
+        document.getElementById('sheetUserNameInput').addEventListener('input', (e) => {
+          state.userName = e.target.value;
+          setStorage(STORAGE_KEYS.USER_NAME, state.userName);
+        });
+        document.getElementById('sheetUserGroupInput').addEventListener('input', (e) => {
+          state.groupTag = e.target.value;
+          setStorage(STORAGE_KEYS.GROUP_TAG, state.groupTag);
+        });
+
+        // Invio Ordine al Gestore
+        document.getElementById('confirmSendMobileBtn').addEventListener('click', async () => {
+          const payload = buildOrderPayload();
+          if (payload.giorni.length === 0) {
+            showToast('Seleziona almeno un piatto prima di inviare');
+            return;
+          }
+
+          const record = {
+            ticketId: state.ticketId,
+            userName: state.userName.trim(),
+            reparto: state.groupTag.trim(),
+            submittedAt: new Date().toLocaleString('it-IT'),
+            selectionsByDay: JSON.parse(JSON.stringify(state.selections))
+          };
+
+          const existingIdx = state.receivedOrders.findIndex(o => o.ticketId === record.ticketId);
+          if (existingIdx !== -1) {
+            state.receivedOrders[existingIdx] = record;
+          } else {
+            state.receivedOrders.unshift(record);
+          }
+          setStorage(STORAGE_KEYS.RECEIVED_ORDERS, JSON.stringify(state.receivedOrders));
+          renderTopBarAndCarousel();
+
+          if (state.webhookUrl) {
+            try {
+              await fetch(state.webhookUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+              });
+            } catch (e) {}
+          }
+
+          closeSheet('reviewSheet');
+          const label = state.userName.trim() ? `inviato da ${state.userName.trim()}` : 'inviato in modo Anonimo';
+          showToast(`✅ Ordine ${label} al Gestore!`);
+        });
+
+        // Copia Riepilogo Testo (WhatsApp / Appunti)
+        document.getElementById('copyMobileOrderBtn').addEventListener('click', () => {
+          const payload = buildOrderPayload();
+          if (payload.giorni.length === 0) {
+            showToast('Seleziona almeno un giorno');
+            return;
+          }
+          const who = payload.nomeUtente ? `Utente: ${payload.nomeUtente}` : 'Utente: Anonimo';
+          const text = [
+            `🌸 MENÙ MOBILE — Ticket ${payload.ticketId}`,
+            who,
+            ...payload.giorni.map(g => `• ${g.etichetta}: 1° ${g.primo} | 2° ${g.secondo} | Cont. ${g.contorno} | Acqua:${g.acqua} Caffè:${g.caffe} Panino:${g.panino}${g.note ? ' | Note: ' + g.note : ''}`)
+          ].join('\n');
+          if (copyText(text)) showToast('📋 Copiato negli appunti!');
+        });
+
+        // Ticket a Schermo Intero
+        document.getElementById('showFullscreenTicketBtn').addEventListener('click', () => {
+          const payload = buildOrderPayload();
+          if (payload.giorni.length === 0) {
+            showToast('Seleziona almeno un giorno');
+            return;
+          }
+          document.getElementById('fullscreenTicketBody').innerHTML = `
+            <div style="border:3px solid #111; border-radius:16px; padding:14px; text-align:center;">
+              <div style="font-size:0.75rem; font-weight:900;">CODICE TICKET</div>
+              <div style="font-family:var(--font-mono); font-size:2.2rem; font-weight:900;">${escapeHtml(payload.ticketId)}</div>
+            </div>
+            ${payload.giorni.map(g => `
+              <div style="border:2px solid #111; border-radius:12px; padding:12px;">
+                <div style="font-weight:900; border-bottom:1px dashed #111; padding-bottom:4px; margin-bottom:6px;">${escapeHtml(g.etichetta)}</div>
+                <div><strong>1°:</strong> ${escapeHtml(g.primo)}</div>
+                <div><strong>2°:</strong> ${escapeHtml(g.secondo)}</div>
+                <div><strong>Cont.:</strong> ${escapeHtml(g.contorno)}</div>
+                <div style="font-weight:900; margin-top:4px;">💧 Acqua:${g.acqua} · ☕ Caffè:${g.caffe} · 🥖 Panino:${g.panino}</div>
+                ${g.note ? `<div style="margin-top:4px;"><strong>Note:</strong> ${escapeHtml(g.note)}</div>` : ''}
+              </div>
+            `).join('')}
+          `;
+          document.getElementById('fullscreenTicket').classList.add('open');
+        });
+
+        document.getElementById('closeFullscreenTicketBtn').addEventListener('click', () => {
+          document.getElementById('fullscreenTicket').classList.remove('open');
+        });
+
+        // Sblocco PIN Gestore
+        document.getElementById('mobilePinForm').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const val = document.getElementById('mobilePinInput').value.trim();
+          if (val === state.managerPin) {
+            state.isManagerUnlocked = true;
+            closeSheet('pinSheet');
+            openSheet('managerSheet');
+            showToast('🔓 Area Gestore sbloccata');
+          } else {
+            showToast('❌ PIN errato (predefinito: 1234)');
+          }
+        });
+
+        document.getElementById('lockManagerMobileBtn').addEventListener('click', () => {
+          state.isManagerUnlocked = false;
+          closeSheet('managerSheet');
+          showToast('🔒 Area Gestore bloccata');
+        });
+
+        // Schede interne Gestore Mobile
+        document.querySelectorAll('[data-m-tab]').forEach(tab => {
+          tab.addEventListener('click', () => {
+            document.querySelectorAll('[data-m-tab]').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.m-mgr-panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById('mPanel_' + tab.dataset.mTab).classList.add('active');
+          });
+        });
+
+        document.getElementById('mKitchenDaySelect').addEventListener('change', renderMobileKitchenDashboard);
+
+        // Elimina singola ordinazione dalla card mobile
+        document.getElementById('mOrdersCardsList').addEventListener('click', (e) => {
+          const del = e.target.closest('[data-del-order]');
+          if (!del) return;
+          state.receivedOrders = state.receivedOrders.filter(o => o.ticketId !== del.dataset.delOrder);
+          setStorage(STORAGE_KEYS.RECEIVED_ORDERS, JSON.stringify(state.receivedOrders));
+          renderTopBarAndCarousel();
+          renderMobileKitchenDashboard();
+          showToast('Ordinazione eliminata');
+        });
+
+        document.getElementById('mClearDayOrdersBtn').addEventListener('click', () => {
+          const dayId = document.getElementById('mKitchenDaySelect').value || state.activeDayId;
+          state.receivedOrders.forEach(o => {
+            if (o.selectionsByDay && o.selectionsByDay[dayId]) delete o.selectionsByDay[dayId];
+          });
+          setStorage(STORAGE_KEYS.RECEIVED_ORDERS, JSON.stringify(state.receivedOrders));
+          renderMobileKitchenDashboard();
+          showToast('Ordini della giornata svuotati');
+        });
+
+        // Esportazione CSV e TXT
+        document.getElementById('mExportCsvBtn').addEventListener('click', () => {
+          const rows = [['Ticket', 'Utente (Riservato Gestore)', 'Reparto', 'Giorno', 'Data', 'Primo', 'Secondo', 'Contorno', 'Acqua', 'Caffe', 'Panino', 'Note']];
+          state.receivedOrders.forEach(o => {
+            state.days.forEach(d => {
+              const s = o.selectionsByDay && o.selectionsByDay[d.id];
+              if (!s || !(s.primo || s.secondo || s.contorno || s.acqua || s.caffe || s.panino)) return;
+              const p = (d.primo.find(x => x.id === s.primo) || {}).name || 'Nessuno';
+              const sec = (d.secondo.find(x => x.id === s.secondo) || {}).name || 'Nessuno';
+              const c = (d.contorno.find(x => x.id === s.contorno) || {}).name || 'Nessuno';
+              rows.push([o.ticketId, o.userName || 'Anonimo', o.reparto || '', d.name, d.date, p, sec, c, s.acqua ? 'SI' : 'NO', s.caffe ? 'SI' : 'NO', s.panino ? 'SI' : 'NO', s.note || '']);
+            });
+          });
+          const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+          downloadFile('ordini-cucina-mobile.csv', csv, 'text/csv;charset=utf-8');
+        });
+
+        document.getElementById('mExportTxtBtn').addEventListener('click', () => {
+          const dayId = document.getElementById('mKitchenDaySelect').value || state.activeDayId;
+          const { day, stats } = computeDayKitchenData(dayId);
+          const txt = [
+            `FOGLIO CUCINA MOBILE — ${day.name} (${day.date})`,
+            `TOTALE ORDINAZIONI GIORNATA: ${stats.totalOrders}`,
+            `Totale Primi: ${stats.totPrimi} | Totale Secondi: ${stats.totSecondi} | Totale Contorni: ${stats.totContorni}`,
+            `Acqua: ${stats.acqua} | Caffè: ${stats.caffe} | Panini: ${stats.panino}`,
+            `---`,
+            `SPOGLIO PRIMI (${stats.totPrimi}):`,
+            ...day.primo.map(p => `  - ${p.name}: ${stats.primo[p.id] || 0}`),
+            `SPOGLIO SECONDI (${stats.totSecondi}):`,
+            ...day.secondo.map(s => `  - ${s.name}: ${stats.secondo[s.id] || 0}`),
+            `SPOGLIO CONTORNI (${stats.totContorni}):`,
+            ...day.contorno.map(c => `  - ${c.name}: ${stats.contorno[c.id] || 0}`),
+            `---`,
+            `ELENCO ORDINAZIONI (${stats.orders.length}):`,
+            ...stats.orders.map(o => `• ${o.userName || 'Anonimo'} (${o.ticketId}): 1° ${o.primo} | 2° ${o.secondo} | Cont. ${o.contorno}${o.note ? ' | Note: ' + o.note : ''}`)
+          ].join('\n');
+          downloadFile(`cucina-${day.id}.txt`, txt, 'text/plain;charset=utf-8');
+        });
+
+        // Gestione Date e Piatti dal Gestore Mobile
+        function applyStartDate(startObj) {
+          const names = ['LUNEDÌ', 'MARTEDÌ', 'MERCOLEDÌ', 'GIOVEDÌ', 'VENERDÌ', 'SABATO', 'DOMENICA'];
+          const shorts = ['LUN', 'MAR', 'MER', 'GIO', 'VEN', 'SAB', 'DOM'];
+          state.days.forEach((d, idx) => {
+            const dt = new Date(startObj.getTime());
+            dt.setDate(dt.getDate() + idx);
+            const dd = String(dt.getDate()).padStart(2, '0');
+            const mm = String(dt.getMonth() + 1).padStart(2, '0');
+            d.name = names[idx];
+            d.short = shorts[idx];
+            d.date = `${dd}/${mm}/${dt.getFullYear()}`;
+          });
+          setStorage(STORAGE_KEYS.WEEK_MENU, JSON.stringify(state.days));
+          populateManagerSelects();
+          renderMobileMenuEditor();
+          renderAll();
+        }
+
+        document.getElementById('mApplyMondayBtn').addEventListener('click', () => {
+          const val = document.getElementById('mMondayDateInput').value;
+          if (!val) return;
+          const p = val.split('-');
+          applyStartDate(new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])));
+          showToast('📅 Date settimana aggiornate!');
+        });
+
+        document.getElementById('mSetJan2026Btn').addEventListener('click', () => {
+          applyStartDate(new Date(2026, 0, 1));
+          showToast('📅 Impostato dal 01/01/2026');
+        });
+
+        document.getElementById('mIncludeWeekendChk').addEventListener('change', (e) => {
+          state.includeWeekend = e.target.checked;
+          setStorage(STORAGE_KEYS.INCLUDE_WEEKEND, state.includeWeekend ? '1' : '0');
+          populateManagerSelects();
+          renderAll();
+        });
+
+        document.getElementById('mEditDaySelect').addEventListener('change', renderMobileMenuEditor);
+
+        // Sincronizzazione live input e gestione click sull'Editor Etichette (Min. 1 - Max. 3)
+        document.getElementById('mEditCoursesStack').addEventListener('input', (e) => {
+          const inp = e.target.closest('[data-medit-c]');
+          if (!inp) return;
+          const dayId = document.getElementById('mEditDaySelect').value || state.activeDayId;
+          const day = getDayById(dayId);
+          const c = inp.dataset.meditC;
+          const i = Number(inp.dataset.meditI);
+          const f = inp.dataset.meditF;
+          if (day[c] && day[c][i]) {
+            day[c][i][f] = inp.value;
+          }
+        });
+
+        document.getElementById('mEditCoursesStack').addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-tag-action]');
+          if (!btn) return;
+
+          syncDraftInputsToCurrentDay();
+          const dayId = document.getElementById('mEditDaySelect').value || state.activeDayId;
+          const day = getDayById(dayId);
+          const cKey = btn.dataset.tagCourse;
+          const dIdx = Number(btn.dataset.tagDish);
+          const dish = day[cKey] && day[cKey][dIdx];
+          if (!dish) return;
+
+          const currentTags = getDishTags(dish).slice();
+          const action = btn.dataset.tagAction;
+
+          if (action === 'remove') {
+            const removeIdx = Number(btn.dataset.tagIndex);
+            if (currentTags.length <= 1) {
+              showToast('⚠️ Minimo 1 etichetta richiesta! Tocca prima una nuova etichetta per sostituirla.');
+              return;
+            }
+            currentTags.splice(removeIdx, 1);
+            setDishTags(dish, currentTags);
+          } else if (action === 'toggle-preset') {
+            const presetVal = btn.dataset.tagValue;
+            const existingIdx = currentTags.findIndex(t => stripEmojiPrefix(t) === stripEmojiPrefix(presetVal));
+
+            if (existingIdx !== -1) {
+              if (currentTags.length <= 1) {
+                showToast('⚠️ Minimo 1 etichetta richiesta per ogni piatto.');
+                return;
+              }
+              currentTags.splice(existingIdx, 1);
+            } else {
+              if (currentTags.length >= 3) {
+                showToast('⚠️ Massimo 3 etichette per piatto! Rimuovine una con × per aggiungerne un’altra.');
+                return;
+              }
+              currentTags.push(presetVal);
+            }
+            setDishTags(dish, currentTags);
+          } else if (action === 'add-custom') {
+            const customInp = document.getElementById(`customTagInp_${cKey}_${dIdx}`);
+            const rawVal = customInp ? customInp.value.trim() : '';
+            if (!rawVal) {
+              showToast('Scrivi il nome dell’etichetta da aggiungere');
+              return;
+            }
+            if (currentTags.some(t => stripEmojiPrefix(t) === stripEmojiPrefix(rawVal))) {
+              showToast('Etichetta già presente su questo piatto');
+              return;
+            }
+            if (currentTags.length >= 3) {
+              showToast('⚠️ Massimo 3 etichette per piatto! Rimuovine una prima di aggiungerne un’altra.');
+              return;
+            }
+            currentTags.push(formatTagWithIcon(rawVal));
+            setDishTags(dish, currentTags);
+            if (customInp) customInp.value = '';
+          }
+
+          setStorage(STORAGE_KEYS.WEEK_MENU, JSON.stringify(state.days));
+          renderMobileMenuEditor();
+          renderAll();
+          renderMobileKitchenDashboard();
+        });
+
+        document.getElementById('mSaveDayMenuBtn').addEventListener('click', () => {
+          const dayId = document.getElementById('mEditDaySelect').value;
+          const day = getDayById(dayId);
+          day.name = document.getElementById('mEditDayName').value.trim() || day.name;
+          day.short = day.name.slice(0, 3).toUpperCase();
+          day.date = document.getElementById('mEditDayDate').value.trim() || day.date;
+
+          document.querySelectorAll('[data-medit-c]').forEach(inp => {
+            const c = inp.dataset.meditC;
+            const i = Number(inp.dataset.meditI);
+            const f = inp.dataset.meditF;
+            if (day[c] && day[c][i]) day[c][i][f] = inp.value.trim();
+          });
+
+          ['primo', 'secondo', 'contorno'].forEach(c => {
+            (day[c] || []).forEach(dish => getDishTags(dish));
+          });
+
+          setStorage(STORAGE_KEYS.WEEK_MENU, JSON.stringify(state.days));
+          populateManagerSelects();
+          renderAll();
+          renderMobileKitchenDashboard();
+          showToast('💾 Giorno, piatti ed etichette salvati!');
+        });
+
+        // Salva PIN e Webhook
+        document.getElementById('mSavePinBtn').addEventListener('click', () => {
+          const pin = document.getElementById('mNewPinInput').value.trim();
+          if (!pin) return;
+          state.managerPin = pin;
+          setStorage(STORAGE_KEYS.MANAGER_PIN, pin);
+          showToast('🔐 Nuovo PIN salvato!');
+        });
+
+        document.getElementById('mSaveWebhookBtn').addEventListener('click', () => {
+          state.webhookUrl = document.getElementById('mWebhookInput').value.trim();
+          setStorage(STORAGE_KEYS.WEBHOOK_URL, state.webhookUrl);
+          showToast('🔗 URL Webhook salvato!');
+        });
+
+        // Cancellazione Dati Locali
+        document.getElementById('mWipeAllBtn').addEventListener('click', () => {
+          Object.values(STORAGE_KEYS).forEach(removeStorage);
+          state.selections = {};
+          state.receivedOrders = [];
+          state.ticketId = generateTicketId();
+          renderAll();
+          closeSheet('privacySheet');
+          showToast('Dati locali azzerati');
+        });
+      }
+
+      loadState();
+      renderAll();
+      bindEvents();
+    })();
+  </script>
+</body>
+</html>
